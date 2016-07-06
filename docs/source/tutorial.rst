@@ -4,7 +4,7 @@
 Tutorial
 ********
 
-In the simplest case creating a factory requires a line of code, not
+In the simplest case creating a factory requires one line of code, not
 counting the imports:
 
 .. doctest::
@@ -22,8 +22,8 @@ From now on we can use the factory to create objects:
 
 The factory we just created is a bit boring, objects always have the
 same value for the ``name`` attribute. We can override an attribute's
-value by passing the desired value to the factory as keyword
-arguments:
+value by passing the desired value to the factory as a keyword
+argument:
 
 .. doctest::
 
@@ -33,7 +33,7 @@ arguments:
 
 The class ``Factory`` is *schemaless* so it can't check if an
 attribute is allowed or not. Factories created this way will accept
-any agument without complaining:
+silently any keyword argument:
 
 .. doctest::
 
@@ -45,7 +45,7 @@ any agument without complaining:
 Special value types
 ===================
 
-``Factory`` accept generators as values for the attributes:
+``Factory`` accepts generators as values for the attributes:
 
 .. doctest::
 
@@ -146,8 +146,8 @@ Metafactories
 A *metafactory* is just a class whose instances are factories.
 ``Factory`` is a metafactory.
 
-The main use case of metafactories is providing default values for the
-factories.
+The main use case for defining metafactories is providing default
+values for the factories.
 
 .. doctest::
 
