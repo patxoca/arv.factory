@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# $Id:$
-
-
 import inspect
 from unittest import TestCase
 

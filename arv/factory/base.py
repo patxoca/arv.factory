@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# $Id: testing.py 4980 2016-07-04 19:13:06Z alex $
-
 # marker utilitzar per les factories per indicar que s'omet un atribut
 
 import inspect
