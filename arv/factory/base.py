@@ -22,10 +22,10 @@ def escape(obj):
 
 
 class Factory(object):
-    """Class for defining factories.
+    """Class for defining dictionary factories.
 
     Instances of ``Factory`` classes are actual factories. Calling an
-    instance creates a new object.
+    instance creates a new dictionary.
 
     """
 
@@ -76,6 +76,17 @@ class Factory(object):
                 else:
                     res[k] = v
         return res
+
+
+class ObjectFactory(Factory):
+    """Class for defining object factories.
+
+    """
+    constructor = None
+
+    def __call__(self, **kwargs):
+        d = super(ObjectFactory, self).__call__(**kwargs)
+        return self.constructor(**d)
 
 
 def make_factory(**kwargs):
