@@ -7,7 +7,7 @@ setup(
     name='arv.factory',
     version=version,
     description="Test fixtures replacement for python.",
-    long_description=open("README.txt").read(),
+    long_description=open("README.rst").read(),
     # Get more strings from
     # http://pypi.python.org/pypi?:action=list_classifiers
     classifiers=[
