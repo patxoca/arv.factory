@@ -78,7 +78,7 @@ class Factory(object):
         return res
 
 
-def make_factory(**defaults):
+def make_factory(**kwargs):
     class F(Factory):
-        defaults = defaults
+        defaults = kwargs
     return F
