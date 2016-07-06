@@ -6,11 +6,10 @@
 Welcome to arv.factory's documentation!
 =======================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 
+   tutorial
 
 
 Indices and tables
@@ -19,4 +18,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
