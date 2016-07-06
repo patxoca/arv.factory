@@ -15,6 +15,11 @@ DELETE = object()
 # foreignkeys. Una possibilitat es redefinir el mètode 'dict' de la
 # factoria + super.
 
+def escape(obj):
+    def wrapper():
+        return obj
+    return wrapper
+
 
 class Factory(object):
     """Class for defining factories.
@@ -54,7 +59,7 @@ class Factory(object):
     def _process_defaults(self, d):
         res = {}
         for k, v in d.items():
-            if inspect.isgeneratorfunction(v):
+            if callable(v):
                 res[k] = v()
             elif v is not DELETE:
                 res[k] = v

@@ -3,7 +3,7 @@
 import inspect
 from unittest import TestCase
 
-from ..base import DELETE, Factory
+from ..base import DELETE, escape, Factory
 
 
 class TestProcessDefaults(TestCase):
@@ -24,6 +24,22 @@ class TestProcessDefaults(TestCase):
         self.assertTrue(inspect.isgeneratorfunction(d["bar"]))
         res = factory._process_defaults(d)
         self.assertTrue(inspect.isgenerator(res["bar"]))
+
+    def test_calls_functions(self):
+        def function():
+            return 42
+        factory = Factory()
+        d = {"foo": 1, "bar": function}
+        res = factory._process_defaults(d)
+        self.assertEqual(res["bar"], 42)
+
+    def test_escape_callable(self):
+        def function():
+            return 42
+        factory = Factory()
+        d = {"foo": 1, "bar": escape(function)}
+        res = factory._process_defaults(d)
+        self.assertIs(res["bar"], function)
 
 
 class TestConstructor(TestCase):
