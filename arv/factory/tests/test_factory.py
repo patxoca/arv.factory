@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import inspect
+import itertools
 from unittest import TestCase
 
-from ..base import DELETE, escape, Factory
+from ..base import DELETE, Factory, escape
 
 
 class TestProcessDefaults(TestCase):
@@ -97,3 +98,46 @@ class TestDict(TestCase):
         self.assertEqual(d["bar"], 42)
         d = self.factory()
         self.assertEqual(d["bar"], 1)
+
+
+class TestMany(TestCase):
+
+    def setUp(self):
+        def generator():
+            i = 1
+            while True:
+                yield i
+                i = i + 1
+
+        class MyFactory(Factory):
+            defaults = {
+                "foo": 1,
+                "bar": generator,
+            }
+        self.factory = MyFactory()
+
+    def test_number_of_objects(self):
+        num_obj = 10
+        res = self.factory.many(num_obj)
+        self.assertEqual(len(res), num_obj)
+        for i in range(num_obj):
+            d = res[i]
+            self.assertTrue(isinstance(d, dict))
+            self.assertIn("foo", d)
+            self.assertIn("bar", d)
+            self.assertEqual(d["foo"], 1)
+            self.assertEqual(d["bar"], i + 1)
+
+    def test_consumes_generators_in_kwargs(self):
+        num_obj = 10
+        res = self.factory.many(num_obj, foo=(i * i for i in itertools.count()))
+        for i in range(num_obj):
+            d = res[i]
+            self.assertEqual(d["foo"], i * i)
+            self.assertEqual(d["bar"], i + 1)
+
+    def test_kwarg_overriding_generator_dont_consume_generator(self):
+        num_obj = 1
+        res = self.factory.many(num_obj, bar=(i * i for i in itertools.count()))
+        obj = self.factory()
+        self.assertEqual(obj["bar"], 1)

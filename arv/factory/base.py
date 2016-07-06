@@ -37,19 +37,21 @@ class Factory(object):
         self._defaults = self._process_defaults(d)
 
     def __call__(self, **kwargs):
-        res = {}
-        for k, v in self._defaults.items():
-            if k not in kwargs:
-                if inspect.isgenerator(v):
-                    res[k] = v.next()
-                else:
-                    res[k] = v
+        res = self._expand_dict(self._defaults, exclude=set(kwargs.keys()))
         for k, v in kwargs.items():
             if v is DELETE:
                 if k in res:
                     del res[k]
             else:
                 res[k] = v
+        return res
+
+    def many(self, count, **kwargs):
+        res = []
+        while count:
+            count = count - 1
+            d = self._expand_dict(kwargs)
+            res.append(self(**d))
         return res
 
     @classmethod
@@ -63,6 +65,16 @@ class Factory(object):
                 res[k] = v()
             elif v is not DELETE:
                 res[k] = v
+        return res
+
+    def _expand_dict(self, d, exclude=()):
+        res = {}
+        for k, v in d.items():
+            if k not in exclude:
+                if inspect.isgenerator(v):
+                    res[k] = v.next()
+                else:
+                    res[k] = v
         return res
 
 
