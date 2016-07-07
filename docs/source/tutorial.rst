@@ -20,6 +20,19 @@ From now on we can use the factory to create objects:
    >>> obj
    {'name': 'Bob'}
 
+Objects created with the factory may look the same but are independent
+from each other:
+
+.. doctest::
+
+   >>> obj1 = factory()
+   >>> obj2 = factory()
+   >>> obj1, obj2
+   ({'name': 'Bob'}, {'name': 'Bob'})
+   >>> obj1["name"] = "Alice"
+   >>> obj1, obj2
+   ({'name': 'Alice'}, {'name': 'Bob'})
+
 The factory we just created is a bit boring, objects always have the
 same value for the ``name`` attribute. We can override an attribute's
 value by passing the desired value to the factory as a keyword
