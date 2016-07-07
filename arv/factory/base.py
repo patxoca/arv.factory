@@ -30,6 +30,7 @@ class Factory(object):
     """
 
     defaults = {}
+    constructor = dict
 
     def __init__(self, **kwargs):
         d = self._get_defaults()
@@ -44,7 +45,7 @@ class Factory(object):
                     del res[k]
             else:
                 res[k] = v
-        return res
+        return self.constructor(**res)
 
     def many(self, count, **kwargs):
         res = []
@@ -76,17 +77,6 @@ class Factory(object):
                 else:
                     res[k] = v
         return res
-
-
-class ObjectFactory(Factory):
-    """Class for defining object factories.
-
-    """
-    constructor = None
-
-    def __call__(self, **kwargs):
-        d = super(ObjectFactory, self).__call__(**kwargs)
-        return self.constructor(**d)
 
 
 def make_factory(**kwargs):

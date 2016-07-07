@@ -4,7 +4,7 @@ import inspect
 import itertools
 from unittest import TestCase
 
-from ..base import DELETE, Factory, ObjectFactory, escape
+from ..base import DELETE, Factory, escape
 
 
 class TestProcessDefaults(TestCase):
@@ -146,32 +146,23 @@ class TestMany(TestCase):
         self.assertEqual(obj["bar"], 1)
 
 
-class TestObjectFactory(TestCase):
+class TestAlternateConstructor(TestCase):
 
     def setUp(self):
         class Class(object):
             def __init__(self, **kwargs):
                 self.__dict__.update(kwargs)
 
-        class MyFactory(ObjectFactory):
-            defaults = {
-                "foo": 1,
-                "bar": 2
-            }
+        class MyFactory(Factory):
             constructor = Class
         self.Class = Class
         self.MyFactory = MyFactory
         self.factory = MyFactory()
 
-    def test_returned_object_type(self):
-        self.assertTrue(isinstance(self.factory(), self.Class))
+    def test_object_class(self):
+        obj = self.factory(foo=1)
+        self.assertIsInstance(obj, self.Class)
 
-    def test_default_attributes(self):
-        obj = self.factory()
+    def test_object_attributes(self):
+        obj = self.factory(foo=1)
         self.assertEqual(obj.foo, 1)
-        self.assertEqual(obj.bar, 2)
-
-    def test_override_attributes(self):
-        obj = self.factory(foo=3, bar=DELETE)
-        self.assertEqual(obj.foo, 3)
-        self.assertFalse(hasattr(obj, "bar"))
