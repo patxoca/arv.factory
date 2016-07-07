@@ -48,7 +48,7 @@ class Factory(object):
 
     def many(self, count, **kwargs):
         res = []
-        while count:
+        while count > 0:
             count = count - 1
             d = self._expand_dict(kwargs)
             res.append(self(**d))

@@ -116,6 +116,9 @@ class TestMany(TestCase):
             }
         self.factory = MyFactory()
 
+    def test_negative_count_returns_empty_list(self):
+        self.assertEqual(self.factory.many(-1), [])
+
     def test_number_of_objects(self):
         num_obj = 10
         res = self.factory.many(num_obj)
