@@ -201,6 +201,38 @@ create many factories with small variations i order to perform some
 specific testing.
 
 
+Creating other types of objects
+===============================
+
+In the examples we have seen so far the factory creates dictionaries
+but usually we want to create other types of objects, an actual
+*object* a django model etc. That can be acomplished defining a new
+metafactory with a *constructor* class attribute. The value of that
+attribute must be a callable that accepts keyword arguments an returns
+an *object* of the intended type, a *class* is the natural choice but
+any callable can do:
+
+.. doctest::
+
+   >>> class MyClass(object):
+   ...     def __init__(self, name, age):
+   ...         self.name = name
+   ...         self.age = age
+   ...
+   >>> class MyFactory(Factory):
+   ...     defaults = {"name": "Bob", "age": 42}
+   ...     constructor = MyClass
+   ...
+   >>> factory = MyFactory()
+   >>> obj = factory()
+   >>> isinstance(obj, MyClass)
+   True
+   >>> obj.name
+   'Bob'
+   >>> obj.age
+   42
+
+
 Generators and metafactories
 ============================
 
