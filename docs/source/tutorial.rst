@@ -147,9 +147,20 @@ call to the ``many`` method:
 
    >>> factory = Factory(
    ...     name=(i for i in ("Bob", "Alice")),
-   ...     age=(i for i in (42, 39)),
+   ...     age=42,
    ... )
    >>> factory.many(2)
+   [{'age': 42, 'name': 'Bob'}, {'age': 42, 'name': 'Alice'}]
+
+``many`` also accepts generators as keyword arguments:
+
+.. doctest::
+
+   >>> factory = Factory(
+   ...     name=(i for i in ("Bob", "Alice")),
+   ...     age=42,
+   ... )
+   >>> factory.many(2, age=(i for i in (42, 39)))
    [{'age': 42, 'name': 'Bob'}, {'age': 39, 'name': 'Alice'}]
 
 
