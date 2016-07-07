@@ -87,6 +87,9 @@ An exception for the previous rule is that specifying a value for a
    >>> factory()
    {'name': 'Alice'}
 
+.. note:: at that point explaining callables may be confusing,
+          consider moving it after explaining how factories work.
+
 Callables also are treated specially when creating a factory, they are
 called without arguments, when creating the factory not the objects,
 and the returned value is used as the attribute's default value:
@@ -113,7 +116,10 @@ avoid the call:
    >>> callable(obj["not_called"])
    True
 
-Callables are more useful when used in *metafactories*.
+In that context we can think about callables as constructors for the
+actual value of the attribute. The primary usage of callables is in
+conjunction with generators in *metafactories* and in more advanced
+usage patterns (see :ref:`sect-complex-objects`).
 
 
 .. note:: generators and callables are treated specially only when
@@ -171,7 +177,7 @@ A *metafactory* is just a class whose instances are factories.
 ``Factory`` is a metafactory.
 
 The main use case for defining metafactories is providing default
-values for the factories.
+values for the factories and easing code reusage.
 
 .. doctest::
 
@@ -204,9 +210,9 @@ specific testing.
 Creating other types of objects
 ===============================
 
-In the examples we have seen so far the factory creates dictionaries
-but usually we want to create other types of objects, an actual
-*object* a django model etc. That can be acomplished defining a new
+In the examples we have seen so far the factories created dictionaries
+but usually we want to create other types of objects, instances for
+som class a django model etc. That can be accomplished defining a new
 metafactory with a *constructor* class attribute. The value of that
 attribute must be a callable that accepts keyword arguments an returns
 an *object* of the intended type, a *class* is the natural choice but
@@ -233,6 +239,11 @@ any callable can do:
    42
 
 
+How does factory creation work
+==============================
+
+
+
 Generators and metafactories
 ============================
 
@@ -255,9 +266,14 @@ Consider the following example:
    >>> factory_1()["age"]
    2
 
-Both factories share the same generator. If we require independent
-generators for each factory we can use a callable as the attribute's
-value:
+The problem here is that the generator for the ``age`` attribute is
+created when the metafactory is defined, not when the factories are
+created, so both ``factory_1`` and ``factory_2`` share the same
+generator.
+
+If we require independent generators for each factory we can use a
+callable as the attribute's value so that the generator creation is
+delayed until the factory is created:
 
 .. doctest::
 
@@ -282,4 +298,176 @@ value:
 
 In the example we used a *generator function* but any callable will do
 (any object for wich the ``callable`` builtin returns ``True``) as
-long as it returns a generator.
+long as it returns a generator:
+
+.. doctest::
+
+   >>> class MyFactory(Factory):
+   ...     defaults = {
+   ...         "name": "Bob",
+   ...         "age": lambda: (i for i in xrange(10)),
+   ...     }
+   ...
+   >>> factory_1 = MyFactory()
+   >>> factory_2 = MyFactory()
+   >>> factory_1()["age"]
+   0
+   >>> factory_2()["age"]
+   0
+   >>> factory_1()["age"]
+   1
+
+In that example whe use ``lambda`` to create an anonymous function.
+
+
+Builtin generators
+==================
+
+``arv.factory`` defines some generators that may be useful when
+defining factories. Take a look at the API documentation for a
+complete list.
+
+For the sake of the tutorial we will introduce the ``mkgen`` and
+``cycle`` generators.
+
+``mkgen`` takes a function (any callable) and its arguments and
+creates an infinite generator that calls the function every time the
+generator is consumed:
+
+.. doctest::
+
+   >>> from arv.factory.api import gen
+   >>> def myfunction(a, b):
+   ...     return "a=%s b=%s" % (a, b)
+   ...
+   >>> g = gen.mkgen(myfunction, 1, b=2)
+   >>> g.next()
+   'a=1 b=2'
+   >>> g.next()
+   'a=1 b=2'
+
+A more useful example would be using a random number generator:
+
+.. code-block:: python
+
+   >>> from random import randint
+   >>> g = gen.mkgen(randint, 0, 100)
+   >>> g.next()
+   50
+   >>> g.next()
+   85
+
+In the section :ref:`sect-complex-objects` we'll see a more powerful
+usage of ``mkgen``.
+
+``cycle`` is the generator version of the ``itertools.cycle``
+function:
+
+.. doctest::
+
+   >>> g = gen.cycle((1, 2))
+   >>> g.next()
+   1
+   >>> g.next()
+   2
+   >>> g.next()
+   1
+
+
+.. _sect-complex-objects:
+
+Complex objects
+===============
+
+Let's say we have *persons* and *pets*, where each person has one pet
+in its ``pet`` attribute. How do we define a factory for creating
+persons with pets?
+
+First at all we need a factory for pets:
+
+.. doctest::
+
+   >>> pet_factory = Factory(
+   ...     name="Rocky",
+   ...     kind=gen.cycle(("dog", "cat", "snake"))
+   ... )
+
+We use the ``cycle`` generator to make the example a bit more
+interesting.
+
+Now we need a factory for persons wich, somehow, uses the
+``pet_factory`` to create pets. Well, note that in order to create
+objects we call the factory, factories are callables so we can use
+``mkgen`` to create a generator that calls ``pet_factory`` in order to
+create pets:
+
+.. doctest::
+
+   >>> person_factory = Factory(
+   ...     name="Bob",
+   ...     pet=gen.mkgen(pet_factory)
+   ... )
+   >>> person_factory()
+   {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
+   >>> person_factory(name="Alice")
+   {'pet': {'kind': 'cat', 'name': 'Rocky'}, 'name': 'Alice'}
+
+In that example there is only one factory for pets, so creating more
+pets will continue from where it left off:
+
+.. doctest::
+
+   >>> pet_factory()
+   {'kind': 'snake', 'name': 'Rocky'}
+
+If that's a problem we can resort to metafactories:
+
+.. doctest::
+
+   >>> class PetFactory(Factory):
+   ...     defaults = {
+   ...         "name": "Rocky",
+   ...         "kind": lambda: gen.cycle(("dog", "cat", "snake")),
+   ...     }
+   ...
+   >>> class PersonFactory(Factory):
+   ...     defaults = {
+   ...         "name": "Bob",
+   ...         "pet": lambda: gen.mkgen(PetFactory())
+   ...     }
+   ...
+   >>> factory = PersonFactory()
+   >>> factory()
+   {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
+   >>> factory()
+   {'pet': {'kind': 'cat', 'name': 'Rocky'}, 'name': 'Bob'}
+   >>> factory2 = PersonFactory()
+   >>> factory2()
+   {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
+   >>> factory2()
+   {'pet': {'kind': 'cat', 'name': 'Rocky'}, 'name': 'Bob'}
+
+Note the usage of ``lambda`` to create anonymous functions in order to
+delay the creation of the ``kind`` and ``pet`` generators until the
+factory is created.
+
+Those examples may seem a bit contribed at first but that's because
+they try to illustrate factory reusability. The first example could be
+rewriten as:
+
+.. doctest::
+
+   >>> person_factory = Factory(
+   ...     name="Bob",
+   ...     pet=gen.mkgen(Factory(
+   ...         name="Rocky",
+   ...         kind=gen.cycle(("dog", "cat", "snake"))
+   ...     ))
+   ... )
+   >>> person_factory()
+   {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
+   >>> person_factory(name="Alice")
+   {'pet': {'kind': 'cat', 'name': 'Rocky'}, 'name': 'Alice'}
+
+But this is less readable and will introduce code duplication if you
+need another pet factory somewhere.
