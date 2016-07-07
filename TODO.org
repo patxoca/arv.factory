@@ -1,0 +1,77 @@
+#+TITLE: TODOs for arv.factory
+#+AUTHOR: Alexis Roda
+#+EMAIL: alexis.roda.villalonga@gmail.com
+
+#+TODO: TODO STRT HOLD PAUS DONE(@)
+#+TODO: REPORT(r) BUG(b) KNOWNCAUSE(k) | FIXED(f)
+#+TODO: | CANCELED(c)
+
+* TODOs
+
+** DONE ~ObjectFactory~ is redundant
+   - State "DONE"       from "TODO"       [2016-07-07 dj 21:09]
+
+Move the ~constructor~ class attribute from ~ObjectFactory~ to
+~Factory~ and assign a default value of ~dict~.
+
+** TODO Add support for iterators?
+
+Maybe its better to replace /generator/ with /iterator/.
+
+Pros:
+
+- nicer interface and improved composability:
+
+  We can make a factory an iterator (iterable?) by defining the
+  ~__iter__~ and ~next~ methods. I don't know how to make a class
+  instance a generator, it don't seem to make many sense.
+
+  Treating specially iterables and making factories iterables would
+  simplify creating complex objects in wich attribute's values are
+  created with factories, just specify the factory and we are done, no
+  more ~mkgen~ incantations.
+
+Cons:
+
+- too much stock python objects are iterables and they must somehow be
+  scaped in order to use them literally instead of as a list of
+  values to be consumed.
+
+  For my current use case that's not a problem since the values I need
+  are not iterable, except for strings, but in a general case it may
+  be a problem.
+
+The motivation for using generators is /rarity/: in that context it's
+unlikely that a value for an attribute of an objecte would be a
+generator.
+
+We could as well to define an iterable-like protocol and use objects
+implementing that protocol as generators for values. The only cons I
+can think about is in testing ~arv.factory~ itself.
+
+*** Checking if an object is iterable
+
+In Python 2.6 or better, the designed-in idiom for such behavioral
+checks is a "membership check" with the abstract base class in the
+collections module of the standard library:
+
+#+BEGIN_SRC python
+>>> import collections
+>>> isinstance('ciao', collections.Iterable)
+True
+>>> isinstance(23, collections.Iterable)
+False
+>>> isinstance(xrange(23), collections.Iterable)
+True
+#+END_SRC
+
+Note that for this special case you'll often want to special-case
+strings (which are iterable but most application contexts want to
+treat as "scalars" anyway). Whatever approach you're using to check
+iterableness, if you need such special casing just prepend a check for
+isinstance(x, basestring) -- for example:
+
+#+BEGIN_SRC python
+def reallyiterable(x):
+    return not isinstance(x, basestring) and isinstance(x, collections.Iterable)
+#+END_SRC
