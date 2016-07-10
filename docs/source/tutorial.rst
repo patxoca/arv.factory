@@ -35,8 +35,8 @@ from each other:
 
 The factory we just created is a bit boring, objects always have the
 same value for the ``name`` attribute. We can override an attribute's
-value by passing the desired value to the factory as a keyword
-argument:
+value when creating an object by passing the desired value as a
+keyword argument:
 
 .. doctest::
 
@@ -44,94 +44,101 @@ argument:
    >>> alice
    {'name': 'Alice'}
 
-The class ``Factory`` is *schemaless* so it can't check if an
-attribute is allowed or not. Factories created this way will accept
-silently any keyword argument:
+Another way to get objects with different values is using *value
+generators*:
 
 .. doctest::
 
-    >>> eve = factory(name="Eve", age=42)
-    >>> eve
-    {'age': 42, 'name': 'Eve'}
-
-
-Special value types
-===================
-
-``Factory`` accepts generators as values for the attributes:
-
-.. doctest::
-
-   >>> names = ("Bob", "Alice")
-   >>> factory = Factory(name=(i for i in names))
-   >>> for i in range(2):
-   ...     obj = factory()
-   ...     print(obj["name"])
-   Bob
-   Alice
-
-Every object created by the factory consumes one item from the
-generator. Creating an object when the generator is exhausted will
-raise an exception.
-
-An exception for the previous rule is that specifying a value for a
-*generated* attribute don't consumes the generator:
-
-.. doctest::
-
-   >>> factory = Factory(name=(i for i in names))
+   >>> from arv.factory.api import Gen
+   >>> factory = Factory(name=Gen(["Bob", "Alice", "Eve"]))
    >>> factory()
    {'name': 'Bob'}
-   >>> factory(name="Eve")
-   {'name': 'Eve'}
    >>> factory()
    {'name': 'Alice'}
-
-.. note:: at that point explaining callables may be confusing,
-          consider moving it after explaining how factories work.
-
-Callables also are treated specially when creating a factory, they are
-called without arguments, when creating the factory not the objects,
-and the returned value is used as the attribute's default value:
-
-.. doctest::
-
-   >>> def function():
-   ...     return 42
-   ...
-   >>> factory = Factory(name="Bob", age=function)
    >>> factory()
-   {'age': 42, 'name': 'Bob'}
+   {'name': 'Eve'}
 
-If the actual value is a function we need to *escape* it in order to
-avoid the call:
+Note the use of ``Gen`` in the keyword argument ``name`` when creating
+the factory. ``Gen`` creates a *value generator* from any iterable.
+From now on we'll refer to *value generators* simply as *generators*.
+Not to confuse with python generators.
+
+.. note:: generators are allowed only when defining or creating a
+          factory no when creating objects.
+
+Trying to create new objects once the generator is exhausted will
+raise an ``StopIteration`` exception:
 
 .. doctest::
 
-   >>> from arv.factory.api import escape
-   >>> factory = Factory(called=function, not_called=escape(function))
-   >>> obj = factory()
-   >>> callable(obj["called"])
-   False
-   >>> callable(obj["not_called"])
-   True
+   >>> factory()
+   Traceback (most recent call last):
+   ...
+   StopIteration
 
-In that context we can think about callables as constructors for the
-actual value of the attribute. The primary usage of callables is in
-conjunction with generators in *metafactories* and in more advanced
-usage patterns (see :ref:`sect-complex-objects`).
+Finally, if an attribute of our objects is itself an object we can
+nest factories:
+
+.. doctest::
+
+   >>> pet_factory = Factory(
+   ...     name="Rocky",
+   ...     kind=Gen(["dog", "cat", "snake"])
+   ... )
+   >>> factory = Factory(
+   ...     name=Gen(["Bob", "Alice"]),
+   ...     pet=pet_factory
+   ... )
+   >>> factory()
+   {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
+   >>> factory()
+   {'pet': {'kind': 'cat', 'name': 'Rocky'}, 'name': 'Alice'}
+
+The ``Factory`` class is *schemaless* so it can't check if an
+attribute is allowed or not neither its type. Factories created this
+way will silently accept any keyword argument of any type:
+
+.. doctest::
+
+    >>> factory = Factory()
+    >>> eve = factory(name=42, age="Eve")
+    >>> eve
+    {'age': 'Eve', 'name': 42}
 
 
-.. note:: generators and callables are treated specially only when
-          creating the factory, when creating the objects they are
-          copied verbatim to the resulting object.
+Creating many objects
+=====================
+
+Sometimes we need to create many objects. As a matter of convenience
+factories define the ``many`` method so we can create as many objects
+as required with just one call:
+
+.. doctest::
+
+   >>> factory = Factory(
+   ...     name=Gen(["Bob", "Alice"]),
+   ...     age=42,
+   ... )
+   >>> factory.many(2)
+   [{'age': 42, 'name': 'Bob'}, {'age': 42, 'name': 'Alice'}]
+
+``many`` also accepts generators as keyword arguments:
+
+.. doctest::
+
+   >>> factory = Factory(
+   ...     name=Gen(["Bob", "Alice"]),
+   ...     age=42,
+   ... )
+   >>> factory.many(2, age=Gen([42, 39]))
+   [{'age': 42, 'name': 'Bob'}, {'age': 39, 'name': 'Alice'}]
 
 
 Removing attributes
 ===================
 
 Ocasionally, in order to perform some testing, we may need to remove
-an attribute from the generated object, that can be accomplished
+some attribute from the generated object, that can be accomplished
 specifying ``DELETE`` as the attribute's value:
 
 .. doctest::
@@ -143,41 +150,15 @@ specifying ``DELETE`` as the attribute's value:
    {}
 
 
-Creating many objects
-=====================
-
-If we need to create many objects we can create them with just one
-call to the ``many`` method:
-
-.. doctest::
-
-   >>> factory = Factory(
-   ...     name=(i for i in ("Bob", "Alice")),
-   ...     age=42,
-   ... )
-   >>> factory.many(2)
-   [{'age': 42, 'name': 'Bob'}, {'age': 42, 'name': 'Alice'}]
-
-``many`` also accepts generators as keyword arguments:
-
-.. doctest::
-
-   >>> factory = Factory(
-   ...     name=(i for i in ("Bob", "Alice")),
-   ...     age=42,
-   ... )
-   >>> factory.many(2, age=(i for i in (42, 39)))
-   [{'age': 42, 'name': 'Bob'}, {'age': 39, 'name': 'Alice'}]
-
-
 Metafactories
 =============
 
-A *metafactory* is just a class whose instances are factories.
-``Factory`` is a metafactory.
+A *metafactory* is just a class whose instances are factories. We
+could have called them just *factory classes*, but *metafactories*
+sounds fancier. ``Factory`` is the base metafactory, any metafactory
+must derivate from ``Factory`` or some of it's subclasses.
 
-The main use case for defining metafactories is providing default
-values for the factories and easing code reusage.
+The main use case for metafactories is code reuse:
 
 .. doctest::
 
@@ -192,31 +173,217 @@ values for the factories and easing code reusage.
    {'age': 42, 'name': 'Bob'}
 
 In the previous example we don't provide default values when creating
-the factory.
+the factory, the defaults from ``MyFactory`` are used.
 
-Default values can be overriden as usual when creating a factory:
+Default values can be overriden as usual when creating a factory and
+when creating objects:
 
 .. doctest::
 
-   >>> factory = MyFactory(name="Alice")
-   >>> factory()
-   {'age': 42, 'name': 'Alice'}
+   >>> alice_factory = MyFactory(name="Alice")
+   >>> alice_factory(age=39)
+   {'age': 39, 'name': 'Alice'}
 
-That's useful when the objects have a lot of attributes and we need to
-create many factories with small variations i order to perform some
-specific testing.
+That's useful when we need to create many factories with small
+variations in order to perform some specific testing.
+
+In a metafactory definition we can also specify a factory or a
+metafactory as the default value for any attribute.
+
+..
+   When specifying a factory it
+   will be shared by all factories:
+
+   .. doctest::
+
+      >>> pet_factory = Factory(name="Rocky", kind=Gen(["dog", "cat"]))
+      >>> class MyFactory(Factory):
+      ...     defaults = {
+      ...         "name": "Bob",
+      ...         "pet": pet_factory,
+      ...     }
+      ...
+      >>> factory1 = MyFactory()
+      >>> factory2 = MyFactory()
+      >>> factory1()
+      {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
+      >>> factory2()
+      {'pet': {'kind': 'cat', 'name': 'Rocky'}, 'name': 'Bob'}
+
+   In this example both ``factory1`` and ``factory2`` share
+   ``pet_factory``, so ``factory2`` continues creating pets from where
+   ``factory1`` left off.
+
+   If we need a new *subfactory* just specify a metafactory:
+
+   .. doctest::
+
+      >>> class PetFactory(Factory):
+      ...     defaults = {
+      ...         "name": "Rocky",
+      ...         "kind": Gen(["dog", "cat"]),
+      ...     }
+      ...
+      >>> class MyFactory(Factory):
+      ...     defaults = {
+      ...         "name": "Bob",
+      ...         "pet": PetFactory,
+      ...     }
+      ...
+      >>> factory1 = MyFactory()
+      >>> factory2 = MyFactory()
+      >>> factory1()
+      {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
+      >>> factory2()
+      {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
+
+
+Pitfalls using metafactories
+============================
+
+Consider the following example:
+
+.. doctest::
+
+   >>> class PetFactory(Factory):
+   ...     defaults = {
+   ...         "name": "Rocky",
+   ...         "kind": Gen(["dog", "cat"]),
+   ...     }
+   ...
+   >>> class PersonFactory(Factory):
+   ...     defaults = {
+   ...         "name": "Bob",
+   ...         "pet": PetFactory,
+   ...     }
+   ...
+   >>> factory1 = PersonFactory()
+   >>> factory2 = PersonFactory()
+   >>> factory1()
+   {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
+   >>> factory2()
+   {'pet': {'kind': 'cat', 'name': 'Rocky'}, 'name': 'Bob'}
+
+Surprisingly the pet created by ``factory2`` is a cat not a dog as we
+may expect.
+
+We specified ``PetFactory`` for the ``pet`` attribute so both
+``factory1`` and ``factory2`` use different pet factories:
+
+.. doctest::
+
+   >>> factory1._defaults["pet"] is factory2._defaults["pet"]
+   False
+
+The reason for this behaviour is that the generator for the ``kind``
+attribute is created when the ``PetFactory`` is defined and the same
+value will be shared by all the factories created from ``PetFactory``,
+so ``factory2``, despite using a different ``PetFactory`` from
+``factory1``, will consume the same generator for the ``kind``
+attribute. This can be illustrated creating a new pet factory:
+
+.. doctest::
+
+   >>> pet_factory = PetFactory()
+   >>> pet_factory()
+   Traceback (most recent call last):
+   ...
+   StopIteration
+
+the shared generator has been exhausted and raises an exception.
+
+What we need is delaying the creation of the generator until the
+factory is created so each factory gets a different generator, this
+can be done using the ``lazy`` class:
+
+.. doctest::
+
+   >>> from arv.factory.api import lazy
+   >>> class PetFactory(Factory):
+   ...     defaults = {
+   ...         "name": "Rocky",
+   ...         "kind": lazy(Gen, ["dog", "cat"]),
+   ...     }
+   ...
+   >>> class PersonFactory(Factory):
+   ...     defaults = {
+   ...         "name": "Bob",
+   ...         "pet": PetFactory,
+   ...     }
+   ...
+   >>> factory1 = PersonFactory()
+   >>> factory2 = PersonFactory()
+   >>> factory1()
+   {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
+   >>> factory2()
+   {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
+
+Notice that ``lazy`` takes a callable and its arguments, not an actual
+generator. Passing a generator, or any other non callable object, will
+raise a ``TypeError`` exception:
+
+.. doctest::
+
+   >>> lazy(Gen([1, 2,3]))
+   Traceback (most recent call last):
+   ...
+   TypeError
+
+Another potential pitfall is specifying a factory as the default value
+for an attribute:
+
+.. doctest::
+
+   >>> pet_factory = Factory(name="Rocky", kind=Gen(["dog", "cat"]))
+   >>> class MyFactory(Factory):
+   ...     defaults = {
+   ...         "name": "Bob",
+   ...         "pet": pet_factory,
+   ...     }
+   ...
+   >>> factory1 = MyFactory()
+   >>> factory2 = MyFactory()
+   >>> factory1()
+   {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
+   >>> factory2()
+   {'pet': {'kind': 'cat', 'name': 'Rocky'}, 'name': 'Bob'}
+   >>> pet_factory()
+   Traceback (most recent call last):
+   ...
+   StopIteration
+
+In this example both ``factory1`` and ``factory2`` share the factory
+``pet_factory``, so ``factory2`` will continue creating pets from
+where ``factory1`` left off, and creating another pet will raise an
+exception.
+
+Notice that, in this example, using a generator for the ``kind``
+attribute is not a problem since it's created when the factory is
+created and will not be shared by any other factory. In fact using
+``lazy`` in that context will not work:
+
+   >>> pet_factory = Factory(
+   ...     name="Rocky",
+   ...     kind=lazy(Gen, ["dog", "cat"])
+   ... )
+   >>> pet_factory() #doctest: +ELLIPSIS
+   {'kind': <arv.factory.generators.lazy object at 0x...>, 'name': 'Rocky'}
+
+As a rule of thumb, when defining metafactories use lazily created
+generators and metafactories as default values. When creating a
+factory use generators and factories.
 
 
 Creating other types of objects
 ===============================
 
 In the examples we have seen so far the factories created dictionaries
-but usually we want to create other types of objects, instances for
-som class a django model etc. That can be accomplished defining a new
-metafactory with a *constructor* class attribute. The value of that
-attribute must be a callable that accepts keyword arguments an returns
-an *object* of the intended type, a *class* is the natural choice but
-any callable can do:
+but usually we want to create other types of objects, instances of
+some class, a Django or SQLAlchemy model etc. That can be accomplished
+defining a new metafactory with a *constructor* class attribute. The
+value of that attribute must be a callable that accepts keyword
+arguments an returns an *object* of the intended type, a *class* is
+the natural choice but any callable can do:
 
 .. doctest::
 
@@ -231,108 +398,70 @@ any callable can do:
    ...
    >>> factory = MyFactory()
    >>> obj = factory()
-   >>> isinstance(obj, MyClass)
-   True
+   >>> type(obj)
+   <class 'MyClass'>
    >>> obj.name
    'Bob'
    >>> obj.age
    42
 
-
-How does factory creation work
-==============================
-
-
-
-Generators and metafactories
-============================
-
-Consider the following example:
+As we'd expect this works with nested factories too:
 
 .. doctest::
 
-   >>> class MyFactory(Factory):
-   ...     defaults = {
-   ...         "name": "Bob",
-   ...         "age": (i for i in xrange(10)),
-   ...     }
+   >>> class Pet(object):
+   ...     def __init__(self, name, kind):
+   ...         self.name = name
+   ...         self.kind = kind
    ...
-   >>> factory_1 = MyFactory()
-   >>> factory_2 = MyFactory()
-   >>> factory_1()["age"]
-   0
-   >>> factory_2()["age"]
-   1
-   >>> factory_1()["age"]
-   2
-
-The problem here is that the generator for the ``age`` attribute is
-created when the metafactory is defined, not when the factories are
-created, so both ``factory_1`` and ``factory_2`` share the same
-generator.
-
-If we require independent generators for each factory we can use a
-callable as the attribute's value so that the generator creation is
-delayed until the factory is created:
-
-.. doctest::
-
-   >>> def my_generator():
-   ...     for i in xrange(10):
-   ...         yield i
+   >>> class Person(object):
+   ...     def __init__(self, name, pet):
+   ...         self.name = name
+   ...         self.pet = pet
    ...
-   >>> class MyFactory(Factory):
-   ...     defaults = {
-   ...         "name": "Bob",
-   ...         "age": my_generator,
-   ...     }
+   >>> class PetFactory(Factory):
+   ...     defaults = {"name": "Rocky", "kind": "dog"}
+   ...     constructor = Pet
    ...
-   >>> factory_1 = MyFactory()
-   >>> factory_2 = MyFactory()
-   >>> factory_1()["age"]
-   0
-   >>> factory_2()["age"]
-   0
-   >>> factory_1()["age"]
-   1
-
-In the example we used a *generator function* but any callable will do
-(any object for wich the ``callable`` builtin returns ``True``) as
-long as it returns a generator:
-
-.. doctest::
-
-   >>> class MyFactory(Factory):
-   ...     defaults = {
-   ...         "name": "Bob",
-   ...         "age": lambda: (i for i in xrange(10)),
-   ...     }
+   >>> class PersonFactory(Factory):
+   ...     defaults = {"name": "Bob", "pet": PetFactory}
+   ...     constructor = Person
    ...
-   >>> factory_1 = MyFactory()
-   >>> factory_2 = MyFactory()
-   >>> factory_1()["age"]
-   0
-   >>> factory_2()["age"]
-   0
-   >>> factory_1()["age"]
-   1
-
-In that example whe use ``lambda`` to create an anonymous function.
+   >>> factory = PersonFactory()
+   >>> obj = factory()
+   >>> type(obj)
+   <class 'Person'>
+   >>> obj.name
+   'Bob'
+   >>> type(obj.pet)
+   <class 'Pet'>
+   >>> obj.pet.name
+   'Rocky'
+   >>> obj.pet.kind
+   'dog'
 
 
 Builtin generators
 ==================
+
+In the examples of this tutorial we have used *finite* generators for
+illustration purposes but in a real scenario we usually need
+*infinite* generators so that an spurious ``StopIteration`` don't
+break our tests.
 
 ``arv.factory`` defines some generators that may be useful when
 defining factories. Take a look at the API documentation for a
 complete list.
 
 For the sake of the tutorial we will introduce the ``mkgen`` and
-``cycle`` generators.
+``string`` generators.
 
-``mkgen`` takes a function (any callable) and its arguments and
-creates an infinite generator that calls the function every time the
-generator is consumed:
+mkgen
+-----
+
+``mkgen`` takes a function (any callable in fact) and its arguments
+and creates an infinite generator that calls the function every time
+the generator is consumed:
 
 .. doctest::
 
@@ -346,7 +475,8 @@ generator is consumed:
    >>> g.next()
    'a=1 b=2'
 
-A more useful example would be using a random number generator:
+A more useful example would be using a function that returns different
+values each time it's called, for example a random number generator:
 
 .. code-block:: python
 
@@ -357,117 +487,204 @@ A more useful example would be using a random number generator:
    >>> g.next()
    85
 
-In the section :ref:`sect-complex-objects` we'll see a more powerful
-usage of ``mkgen``.
+string
+------
 
-``cycle`` is the generator version of the ``itertools.cycle``
-function:
+``string`` is a generator that creates string values from a format
+specification and a counter generator:
 
 .. doctest::
 
-   >>> g = gen.cycle((1, 2))
+   >>> g = gen.string()
+   >>> g.next()
+   '0'
+   >>> g.next()
+   '1'
+
+We can specify a format string when creating the generator:
+
+.. doctest::
+
+   >>> g = gen.string("pet_%02i")
+   >>> g.next()
+   'pet_00'
+   >>> g.next()
+   'pet_01'
+
+Internally ``string`` uses the ``%`` operator, so we can use any
+format specification supported by ``%``.
+
+Additionally we can specify a counter:
+
+.. doctest::
+
+   >>> g = gen.string(counter=[1, 4, 9])
+   >>> g.next()
+   '1'
+   >>> g.next()
+   '4'
+   >>> g.next()
+   '9'
+
+A counter it's just an iterable. In practice we'll probably use some
+python generator in order to generate an infinite sequence of values,
+but as said, the only requirement for the counter is being iterable.
+
+We can be more creative making the counter produce tuples:
+
+.. doctest::
+
+   >>> g = gen.string(format="%02i-%02i", counter=((1, 1), (1, 2), (3, 2)))
+   >>> g.next()
+   '01-01'
+   >>> g.next()
+   '01-02'
+   >>> g.next()
+   '03-02'
+
+
+Advanced usage
+==============
+
+lazy
+----
+
+As an special case, if the callable returns an iterable ``lazy`` will
+wrap the returned value within a ``Gen`` instance:
+
+.. doctest::
+
+   >>> from itertools import cycle
+   >>> class PetFactory(Factory):
+   ...     defaults = {
+   ...         "name": "Rocky",
+   ...         "kind": lazy(cycle, ["dog", "cat"]),
+   ...     }
+   ...
+   >>> factory = PetFactory()
+   >>> factory()
+   {'kind': 'dog', 'name': 'Rocky'}
+   >>> factory()
+   {'kind': 'cat', 'name': 'Rocky'}
+   >>> factory()
+   {'kind': 'dog', 'name': 'Rocky'}
+
+Another usage for ``lazy`` is overriding default values when creating
+factories. Metafactories as default values are already lazily
+evaluated but they receive no arguments. Wrapping them with ``lazy``
+allow us to override the default values:
+
+.. doctest::
+
+   >>> class PersonFactory(Factory):
+   ...     defaults = {
+   ...         "name": "Bob",
+   ...         "pet": lazy(PetFactory, name="Toby"),
+   ...     }
+   ...
+   >>> factory1 = PersonFactory()
+   >>> factory2 = PersonFactory()
+   >>> factory1()
+   {'pet': {'kind': 'dog', 'name': 'Toby'}, 'name': 'Bob'}
+   >>> factory2()
+   {'pet': {'kind': 'dog', 'name': 'Toby'}, 'name': 'Bob'}
+
+Defining a custom generator
+---------------------------
+
+Let's say we need a value generator for the fibonacci sequence. All we
+need is an iterable with the sequence's values, a python generator
+function is a good choice:
+
+.. doctest::
+
+   >>> def fib():
+   ...     a, b = 0, 1
+   ...     while True:
+   ...         yield a
+   ...         a, b = b, a + b
+   ...
+   >>> g = fib()
+   >>> g.next()
+   0
+   >>> g.next()
+   1
    >>> g.next()
    1
    >>> g.next()
    2
-   >>> g.next()
-   1
 
-
-.. _sect-complex-objects:
-
-Complex objects
-===============
-
-Let's say we have *persons* and *pets*, where each person has one pet
-in its ``pet`` attribute. How do we define a factory for creating
-persons with pets?
-
-First at all we need a factory for pets:
+Now we can create a factory:
 
 .. doctest::
 
-   >>> pet_factory = Factory(
-   ...     name="Rocky",
-   ...     kind=gen.cycle(("dog", "cat", "snake"))
-   ... )
-
-We use the ``cycle`` generator to make the example a bit more
-interesting.
-
-Now we need a factory for persons wich, somehow, uses the
-``pet_factory`` to create pets. Well, note that in order to create
-objects we call the factory, factories are callables so we can use
-``mkgen`` to create a generator that calls ``pet_factory`` in order to
-create pets:
-
-.. doctest::
-
-   >>> person_factory = Factory(
-   ...     name="Bob",
-   ...     pet=gen.mkgen(pet_factory)
-   ... )
-   >>> person_factory()
-   {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
-   >>> person_factory(name="Alice")
-   {'pet': {'kind': 'cat', 'name': 'Rocky'}, 'name': 'Alice'}
-
-In that example there is only one factory for pets, so creating more
-pets will continue from where it left off:
-
-.. doctest::
-
-   >>> pet_factory()
-   {'kind': 'snake', 'name': 'Rocky'}
-
-If that's a problem we can resort to metafactories:
-
-.. doctest::
-
-   >>> class PetFactory(Factory):
-   ...     defaults = {
-   ...         "name": "Rocky",
-   ...         "kind": lambda: gen.cycle(("dog", "cat", "snake")),
-   ...     }
-   ...
-   >>> class PersonFactory(Factory):
-   ...     defaults = {
-   ...         "name": "Bob",
-   ...         "pet": lambda: gen.mkgen(PetFactory())
-   ...     }
-   ...
-   >>> factory = PersonFactory()
+   >>> g = fib()
+   >>> factory = Factory(n=Gen(g))
    >>> factory()
-   {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
+   {'n': 0}
    >>> factory()
-   {'pet': {'kind': 'cat', 'name': 'Rocky'}, 'name': 'Bob'}
-   >>> factory2 = PersonFactory()
-   >>> factory2()
-   {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
-   >>> factory2()
-   {'pet': {'kind': 'cat', 'name': 'Rocky'}, 'name': 'Bob'}
+   {'n': 1}
 
-Note the usage of ``lambda`` to create anonymous functions in order to
-delay the creation of the ``kind`` and ``pet`` generators until the
-factory is created.
-
-Those examples may seem a bit contribed at first but that's because
-they try to illustrate factory reusability. The first example could be
-rewriten as:
+Alternatively we can use the ``mkgen`` function:
 
 .. doctest::
 
-   >>> person_factory = Factory(
-   ...     name="Bob",
-   ...     pet=gen.mkgen(Factory(
-   ...         name="Rocky",
-   ...         kind=gen.cycle(("dog", "cat", "snake"))
-   ...     ))
-   ... )
-   >>> person_factory()
-   {'pet': {'kind': 'dog', 'name': 'Rocky'}, 'name': 'Bob'}
-   >>> person_factory(name="Alice")
-   {'pet': {'kind': 'cat', 'name': 'Rocky'}, 'name': 'Alice'}
+   >>> g = fib()
+   >>> factory = Factory(n=gen.mkgen(g.next))
+   >>> factory()
+   {'n': 0}
+   >>> factory()
+   {'n': 1}
 
-But this is less readable and will introduce code duplication if you
-need another pet factory somewhere.
+Finally we may want to define a *constructor* if we plan to use the
+generator in metafactories:
+
+.. doctest::
+
+   >>> def Fib():
+   ...     iterable = fib()
+   ...     return gen.mkgen(fib().next)
+
+Here we create an interable, a python generator, calling the
+*generator function* ``fib``, then we call ``mkgen`` passing the
+``next`` method from the iterable. Remember? ``mkgen`` creates a value
+generator wich will call the function it receives as argument each
+time it's consumed.
+
+.. doctest::
+
+   >>> class MyFactory(Factory):
+   ...     defaults = {"n": lazy(Fib)}
+   ...
+   >>> factory = MyFactory()
+   >>> factory()
+   {'n': 0}
+
+``Fib`` is a function and metafactories don't evaluate functions, only
+``lazy`` instances, so we need to wrap ``Fib`` with ``lazy`` in order
+to get it called at factory creation time.
+
+If we want to avoid having to use lazy explicitly we can do:
+
+.. doctest::
+
+   >>> FIB = lazy(Fib)
+   >>> class MyFactory(Factory):
+   ...     defaults = {"n": FIB}
+   ...
+   >>> factory = MyFactory()
+   >>> factory()
+   {'n': 0}
+
+That's a lot of repetitive work so ``arv.factory`` defines a shortcut
+for this:
+
+.. doctest::
+
+   >>> Fib = gen.mkconstructor(fib)
+   >>> class MyFactory(Factory):
+   ...     defaults = {"n": Fib}
+   ...
+   >>> factory = MyFactory()
+   >>> factory()
+   {'n': 0}
