@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import mock
 
-from ..generators import Gen, count, cycle, mkgen
+from ..generators import Gen, count, cycle, lazy, mkgen
 from ..generators import string
 
 
@@ -22,6 +22,27 @@ class TestGenerator(TestCase):
         self.generator.next()
         with self.assertRaises(StopIteration):
             self.generator.next()
+
+
+class TestLazy(TestCase):
+
+    def test_calling_lazy_object_calls_function(self):
+        f = mock.Mock(return_value=iter([]))
+        l = lazy(f, 1, foo=42)
+        self.assertEqual(f.call_count, 0)
+        r = l()
+        self.assertEqual(f.call_count, 1)
+        self.assertEqual(f.call_args, ((1, ), {"foo": 42}))
+
+    def test_lazy_returns_a_value_generator(self):
+        f = mock.Mock(return_value=iter([]))
+        l = lazy(f)
+        r = l()
+        self.assertIsInstance(r, Gen)
+
+    def test_raises_TypeError_if_argument_not_callable(self):
+        with self.assertRaises(TypeError):
+            lazy(2)
 
 
 class TestMkgen(TestCase):
