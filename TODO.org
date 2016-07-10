@@ -14,7 +14,8 @@
 Move the ~constructor~ class attribute from ~ObjectFactory~ to
 ~Factory~ and assign a default value of ~dict~.
 
-** TODO Add support for iterators?
+** DONE Add support for iterators?
+   - State "DONE"       from "TODO"       [2016-07-10 dg 20:06]
 
 Maybe its better to replace /generator/ with /iterator/.
 
@@ -74,4 +75,12 @@ isinstance(x, basestring) -- for example:
 #+BEGIN_SRC python
 def reallyiterable(x):
     return not isinstance(x, basestring) and isinstance(x, collections.Iterable)
+#+END_SRC
+** TODO overwrite attributes in subobjects
+
+Currently we can override attribute values in the object no in its
+/subobjects/. How about?
+
+#+BEGIN_SRC python
+person = person_with_pet_factory(name="Alice", pet__name="Toby")
 #+END_SRC
