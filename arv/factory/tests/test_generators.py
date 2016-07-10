@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import mock
 
-from ..generators import Gen, count, cycle, lazy, mkgen
+from ..generators import Gen, count, cycle, lazy, mkconstructor, mkgen
 from ..generators import string
 
 
@@ -139,3 +139,41 @@ class TestString(TestCase):
         c = string(counter=count(42, 3))
         self.assertEqual(c.next(), "42")
         self.assertEqual(c.next(), "45")
+
+
+class TestMkConstructor(TestCase):
+
+    def setUp(self):
+        pass
+
+    def test_returns_a_lazy_object(self):
+        c = mkconstructor([])
+        self.assertIsInstance(c, lazy)
+
+    def test_returns_a_Gen_factory(self):
+        c = mkconstructor([])
+        g = c()
+        self.assertIsInstance(g, Gen)
+
+    def test_creates_a_new_iterable_on_each_call(self):
+        c = mkconstructor([1, 2])
+        g1 = c()
+        g2 = c()
+        self.assertEqual(g1.next(), 1)
+        self.assertEqual(g2.next(), 1)
+
+    def test_evaluates_callables(self):
+        def generator_function():
+            yield 1
+        c = mkconstructor(generator_function)
+        g = c()
+        self.assertEqual(g.next(), 1)
+
+    def test_evaluates_callables_on_each_call(self):
+        def generator_function():
+            yield 1
+        c = mkconstructor(generator_function)
+        g1 = c()
+        self.assertEqual(g1.next(), 1)
+        g2 = c()
+        self.assertEqual(g2.next(), 1)

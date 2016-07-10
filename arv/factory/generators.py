@@ -46,6 +46,19 @@ def mkgen(f, *args, **kwargs):
     return Gen(wrapper())
 
 
+def mkconstructor(iterable):
+    def constructor():
+        if callable(iterable):
+            i = iterable()
+        else:
+            i = iterable
+        if not isinstance(i, collections.Iterable):
+            raise TypeError("not an iterable.")
+        i = iter(i)
+        return mkgen(i.next)
+    return lazy(constructor)
+
+
 def count(start=0, step=1):
     """Generator version of ``itertools.count``.
 
