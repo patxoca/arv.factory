@@ -2,49 +2,159 @@
 
 from unittest import TestCase
 
+import mock
+
 from ..base import DELETE, Factory
-from ..generators import Gen
+from ..generators import Gen, lazy
+
+
+class TestProcessMetafactoryDefaults(TestCase):
+
+    def setUp(self):
+        self.factory = Factory()
+
+    def test_returns_a_new_dictionary(self):
+        d = {"foo": 1}
+        res = self.factory._process_metafactory_defaults(d)
+        self.assertIsInstance(res, dict)
+        self.assertIsNot(res, d)
+
+    def test_literal_values_are_copied_verbatim(self):
+        d = {"foo": 1}
+        res = self.factory._process_metafactory_defaults(d)
+        self.assertEqual(res["foo"], 1)
+
+    def test_ignores_DELETE(self):
+        d = {"foo": DELETE}
+        res = self.factory._process_metafactory_arguments(d)
+        self.assertIn("foo", res)
+        self.assertIs(res["foo"], DELETE)
+
+    def test_Gen_instances_are_not_evaluated(self):
+        d = {"foo": 1, "bar": Gen([1])}
+        res = self.factory._process_metafactory_defaults(d)
+        self.assertTrue(isinstance(res["bar"], Gen))
+
+    def test_evaluates_metafactories(self):
+        d = {"foo": 1, "bar": Factory}
+        res = self.factory._process_metafactory_defaults(d)
+        self.assertIsInstance(res["bar"], Factory)
+
+    def test_evaluates_lazy_objects(self):
+        f = mock.Mock(return_value=iter([]))
+        d = {"foo": lazy(f)}
+        self.assertEqual(f.call_count, 0)
+        res = self.factory._process_metafactory_defaults(d)
+        self.assertEqual(f.call_count, 1)
+        self.assertIsInstance(res["foo"], Gen)
+
+    def test_attribute_exclusion(self):
+        d = {"foo": 1, "bar": 2}
+        res = self.factory._process_metafactory_defaults(d, exclude=("bar", ))
+        self.assertNotIn("bar", res)
 
 
 class TestProcessMetafactoryArguments(TestCase):
 
+    def setUp(self):
+        self.factory = Factory()
+
+    def test_returns_a_new_dictionary(self):
+        d = {"foo": 1}
+        res = self.factory._process_metafactory_arguments(d)
+        self.assertIsInstance(res, dict)
+        self.assertIsNot(res, d)
+
+    def test_literal_values_are_copied_verbatim(self):
+        d = {"foo": 1}
+        res = self.factory._process_metafactory_arguments(d)
+        self.assertEqual(res["foo"], 1)
+
     def test_honors_DELETE(self):
-        factory = Factory()
-        d = {"foo": 1, "bar": DELETE}
-        self.assertEqual(
-            factory._process_metafactory_arguments(d),
-            {"foo": 1}
-        )
+        d = {"foo": DELETE}
+        res = self.factory._process_metafactory_arguments(d)
+        self.assertNotIn("foo", res)
 
     def test_Gen_instances_are_not_evaluated(self):
-        factory = Factory()
-        d = {"foo": 1, "bar": Gen([1])}
-        res = factory._process_metafactory_arguments(d)
-        self.assertTrue(isinstance(res["bar"], Gen))
+        d = {"foo": Gen([1])}
+        res = self.factory._process_metafactory_arguments(d)
+        self.assertTrue(isinstance(res["foo"], Gen))
 
-    def test_makes_value_generators_from_metafactories(self):
-        factory = Factory()
-        d = {"foo": 1, "bar": Factory}
-        res = factory._process_metafactory_arguments(d)
-        self.assertIsInstance(res["bar"], Gen)
+    def test_evaluates_factories(self):
+        d = {"foo": Factory()}
+        res = self.factory._process_metafactory_arguments(d)
+        self.assertIsInstance(res["foo"], Gen)
 
 
-class TestFactoryConstructor(TestCase):
+class TestEvalFactoryArguments(TestCase):
+
+    def setUp(self):
+        self.factory = Factory()
+
+    def test_returns_a_new_dictionary(self):
+        d = {"foo": 1}
+        res = self.factory._eval_factory_arguments(d)
+        self.assertIsInstance(res, dict)
+        self.assertIsNot(res, d)
+
+    def test_literal_values_are_copied_verbatim(self):
+        d = {"foo": 1}
+        res = self.factory._eval_factory_arguments(d)
+        self.assertEqual(res["foo"], 1)
+
+    def test_consumes_value_generators(self):
+        d = {"foo": Gen([42])}
+        res = self.factory._eval_factory_arguments(d)
+        self.assertEqual(res["foo"], 42)
+
+    def test_ignores_DELETE(self):
+        d = {"foo": DELETE}
+        res = self.factory._eval_factory_arguments(d)
+        self.assertIn("foo", res)
+        self.assertIs(res["foo"], DELETE)
+
+    def test_attribute_exclusion(self):
+        d = {"foo": 1, "bar": 2}
+        res = self.factory._eval_factory_arguments(d, exclude=("bar", ))
+        self.assertNotIn("bar", res)
+
+
+class TestIsConstructor(TestCase):
+
+    def setUp(self):
+        self.factory = Factory()
+
+    def test_metafactories_are_constructors(self):
+        self.assertTrue(self.factory._is_contructor(Factory))
+
+    def test_lazy_objects_are_constructors(self):
+        f = mock.Mock(return_value=iter([]))
+        self.assertTrue(self.factory._is_contructor(lazy(f)))
+
+    def test_functions_are_not_constructors(self):
+        self.assertFalse(self.factory._is_contructor(lambda x: x))
+
+    def test_classes_are_not_constructors(self):
+        self.assertFalse(self.factory._is_contructor(object))
+
+
+class TestMetafactoryConstructor(TestCase):
 
     def setUp(self):
         class MyFactory(Factory):
-            defaults = {"foo": 1, "bar": Gen([1, 2, 3])}
+            defaults = {
+                "foo": 1,
+                "bar": Gen([1, 2, 3]),
+                "baz": Factory
+            }
         self.MyFactory = MyFactory
 
     def test_collected_defaults(self):
         factory = self.MyFactory()
-        self.assertEqual(len(factory._defaults), 2)
+        self.assertEqual(len(factory._defaults), 3)
         self.assertIn("foo", factory._defaults)
         self.assertIn("bar", factory._defaults)
-
-    def test_Gen_instances_are_not_evaluated(self):
-        factory = self.MyFactory()
-        self.assertIsInstance(factory._defaults["bar"], Gen)
+        self.assertIn("baz", factory._defaults)
 
     def test_kwargs_override_defaults(self):
         factory = self.MyFactory(foo=2)
@@ -53,6 +163,14 @@ class TestFactoryConstructor(TestCase):
     def test_kwargs_honors_DELETE(self):
         factory = self.MyFactory(foo=DELETE)
         self.assertNotIn("foo", factory._defaults)
+
+    def test_kwargs_honors_factories(self):
+        factory = self.MyFactory(foo=Factory())
+        self.assertIsInstance(factory._defaults["baz"], Gen)
+
+    def test_makes_value_generators_from_metafactories(self):
+        factory = self.MyFactory()
+        self.assertIsInstance(factory._defaults["baz"], Gen)
 
 
 class TestObjectCreation(TestCase):
