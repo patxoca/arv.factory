@@ -26,7 +26,7 @@ class TestProcessMetafactoryDefaults(TestCase):
 
     def test_ignores_DELETE(self):
         d = {"foo": DELETE}
-        res = self.factory._process_metafactory_arguments(d)
+        res = self.factory._process_metafactory_defaults(d)
         self.assertIn("foo", res)
         self.assertIs(res["foo"], DELETE)
 
