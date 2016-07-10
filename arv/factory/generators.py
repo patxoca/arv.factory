@@ -8,6 +8,12 @@ import itertools
 
 
 class Gen(object):
+    """Value generator.
+
+    Marker class for iterables that *generate* values for the
+    attributes of the objects created by factories.
+
+    """
     def __init__(self, iterable):
         self._seq = iter(iterable)
 
@@ -19,6 +25,13 @@ class Gen(object):
 
 
 class lazy(object):
+    """Lazy callable.
+
+    Marker class for callables and its arguments. The ``Factory``
+    class recognizes instances of this class and calls them at factory
+    creation time.
+
+    """
     def __init__(self, f, *args, **kwargs):
         if not callable(f):
             raise TypeError("callable required")
@@ -36,6 +49,11 @@ class lazy(object):
 def mkgen(f, *args, **kwargs):
     """Create a generator from a function.
 
+    Returns a value generator (an instance of the ``Gen`` class) wich
+    will call the function with the given arguments each time it's
+    consumed. The return value from the call will be the value
+    produced by the generator.
+
     >>> import random
     >>> g = mkgen(random.randint, 1, 100)
 
@@ -47,6 +65,20 @@ def mkgen(f, *args, **kwargs):
 
 
 def mkconstructor(iterable):
+    """Create a lazy constructor from an iterable.
+
+    Given an iterable or a callable that accepts no arguments and
+    returns an iterable creates a constructor that will be evaluated
+    at factory construction time.
+
+    In other words, given an iterable or a callable that returns an
+    iterable, return an object than can safely be used in metafactory
+    definitions.
+
+    >>> import itertools
+    >>> Count = mkconstructor(itertools.count)
+
+    """
     def constructor():
         if callable(iterable):
             i = iterable()
