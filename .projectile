@@ -1,0 +1,9 @@
+-*.pyc
+-*~
+-/tmp
+-.git
+-.ropeproject
+-.cache
+-*.egg-info
+-.coverage
+-build
