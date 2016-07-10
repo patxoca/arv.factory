@@ -64,7 +64,7 @@ def mkgen(f, *args, **kwargs):
     return Gen(wrapper())
 
 
-def mkconstructor(iterable):
+def mkconstructor(iterable, *args, **kwargs):
     """Create a lazy constructor from an iterable.
 
     Given an iterable or a callable that accepts no arguments and
@@ -77,11 +77,12 @@ def mkconstructor(iterable):
 
     >>> import itertools
     >>> Count = mkconstructor(itertools.count)
+    >>> Cycle = mkconstructor(itertools.cycle, (1, 2, 3))
 
     """
     def constructor():
         if callable(iterable):
-            i = iterable()
+            i = iterable(*args, **kwargs)
         else:
             i = iterable
         if not isinstance(i, collections.Iterable):

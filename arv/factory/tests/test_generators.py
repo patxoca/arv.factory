@@ -177,3 +177,16 @@ class TestMkConstructor(TestCase):
         self.assertEqual(g1.next(), 1)
         g2 = c()
         self.assertEqual(g2.next(), 1)
+
+    def test_passes_arguments_to_callable(self):
+        def generator_function(a, b):
+            while a <= b:
+                yield a
+                a += 1
+        c = mkconstructor(generator_function, 3, 5)
+        g = c()
+        self.assertEqual(g.next(), 3)
+        self.assertEqual(g.next(), 4)
+        self.assertEqual(g.next(), 5)
+        with self.assertRaises(StopIteration):
+            g.next()
