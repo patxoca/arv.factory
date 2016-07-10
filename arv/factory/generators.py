@@ -75,12 +75,12 @@ def cycle(seq):
     return mkgen(iterator.next)
 
 
-def string(format="%(value)s", counter=None):
+def string(format="%i", counter=None):
     if counter is None:
         counter = itertools.count()
 
     def generator():
         for i in counter:
-            yield format % {"value": i}
+            yield format % i
 
     return Gen(generator())

@@ -130,7 +130,7 @@ class TestString(TestCase):
         self.assertEqual(c.next(), "2")
 
     def test_honors_format(self):
-        c = string(format="%(value)02i")
+        c = string(format="%02i")
         self.assertEqual(c.next(), "00")
         self.assertEqual(c.next(), "01")
         self.assertEqual(c.next(), "02")
