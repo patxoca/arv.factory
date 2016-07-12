@@ -64,7 +64,7 @@ From now on we'll refer to *value generators* simply as *generators*.
 Not to confuse with python generators.
 
 .. note:: generators are allowed only when defining or creating a
-          factory no when creating objects.
+          factory not when creating objects.
 
 Trying to create new objects once the generator is exhausted will
 raise an ``StopIteration`` exception:
@@ -290,7 +290,8 @@ attribute. This can be illustrated creating a new pet factory:
    ...
    StopIteration
 
-the shared generator has been exhausted and raises an exception.
+the shared generator has been exhausted by the previous calls to
+``factory1`` and ``factory2`` and raises an exception.
 
 What we need is delaying the creation of the generator until the
 factory is created so each factory gets a different generator, this
@@ -447,7 +448,7 @@ Builtin generators
 In the examples of this tutorial we have used *finite* generators for
 illustration purposes but in a real scenario we usually need
 *infinite* generators so that an spurious ``StopIteration`` don't
-break our tests.
+breaks our tests.
 
 ``arv.factory`` defines some generators that may be useful when
 defining factories. Take a look at the API documentation for a
@@ -486,6 +487,19 @@ values each time it's called, for example a random number generator:
    50
    >>> g.next()
    85
+
+or the ``next`` method from an iterator:
+
+.. doctest::
+
+   >>> l = [1, 2, 3]
+   >>> g = gen.mkgen(iter(l).next)
+   >>> g.next()
+   1
+   >>> g.next()
+   2
+
+This is how some of the generators are implemented.
 
 string
 ------
@@ -545,6 +559,8 @@ We can be more creative making the counter produce tuples:
 
 Advanced usage
 ==============
+
+.. _sect_advanced_usage-lazy:
 
 lazy
 ----
@@ -636,8 +652,8 @@ Alternatively we can use the ``mkgen`` function:
    >>> factory()
    {'n': 1}
 
-Finally we may want to define a *constructor* if we plan to use the
-generator in metafactories:
+If we plan to use the generator in many factories it would be better
+definning a *constructor* and a metafactory:
 
 .. doctest::
 
@@ -688,3 +704,11 @@ for this:
    >>> factory = MyFactory()
    >>> factory()
    {'n': 0}
+
+In a previous example (:ref:`sect_advanced_usage-lazy`) we have seen
+how to use ``lazy`` + ``cycle``. Alternatively we can create a lazy
+constructor:
+
+.. doctest::
+
+   >>> Cycle = gen.mkconstructor(cycle, (2, 4, 8))
