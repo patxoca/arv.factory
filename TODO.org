@@ -79,8 +79,24 @@ def reallyiterable(x):
 ** TODO overwrite attributes in subobjects
 
 Currently we can override attribute values in the object no in its
-/subobjects/. How about?
+/subobjects/. How about a syntax like?
 
 #+BEGIN_SRC python
 person = person_with_pet_factory(name="Alice", pet__name="Toby")
 #+END_SRC
+
+** TODO think about lazy arguments for lazy functions
+
+Look for some use case where any of the arguments of a /lazy/
+function are themselves /lazy/.
+
+** TODO think about factories with schemas
+
+For Django models and so on it may be useful to validate the generated
+objects to some extent.
+
+The factory should be able to generate invalid objects in order to
+perform some testing, but at least some helper that ensures that the
+generated objects provide all the fields in the schema is required.
+
+** TODO think about persisting objects
