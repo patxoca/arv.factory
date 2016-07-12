@@ -14,8 +14,17 @@ class Gen(object):
     attributes of the objects created by factories.
 
     """
+
+    def __new__(cls, iterable):
+        if isinstance(iterable, cls):
+            return iterable
+        else:
+            return super(Gen, cls).__new__(cls, iterable)
+
     def __init__(self, iterable):
-        self._seq = iter(iterable)
+        if not isinstance(iterable, Gen):
+            # NOTE: avoid infinite recursion wrapping a ``Gen``
+            self._seq = iter(iterable)
 
     def __iter__(self):
         return self
@@ -41,7 +50,7 @@ class lazy(object):
 
     def __call__(self):
         res = self._f(*self._args, **self._kwargs)
-        if isinstance(res, collections.Iterable) and not isinstance(res, Gen):
+        if isinstance(res, collections.Iterable):
             res = Gen(res)
         return res
 

@@ -23,6 +23,10 @@ class TestGenerator(TestCase):
         with self.assertRaises(StopIteration):
             self.generator.next()
 
+    def test_wrapping_a_Gen_in_a_Gen_returns_the_original_Gen(self):
+        g = Gen(self.generator)
+        self.assertIs(g, self.generator)
+
 
 class TestLazy(TestCase):
 
