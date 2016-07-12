@@ -153,7 +153,7 @@ def cycle(seq):
     """Generator version of ``itertools.cycle``.
 
     """
-    Gen(itertools.cycle(seq))
+    return Gen(itertools.cycle(seq))
 
 
 def Cycle(seq):
