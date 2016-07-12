@@ -131,8 +131,7 @@ def mkconstructor(iterable, *args, **kwargs):
             i = iterable
         if not isinstance(i, collections.Iterable):
             raise TypeError("not an iterable.")
-        i = iter(i)
-        return mkgen(i.next)
+        return Gen(i)
     return lazy(constructor)
 
 
@@ -140,8 +139,7 @@ def count(start=0, step=1):
     """Generator version of ``itertools.count``.
 
     """
-    iterator = itertools.count(start, step)
-    return mkgen(iterator.next)
+    return Gen(itertools.count(start, step))
 
 
 def Count(start=0, step=1):
@@ -155,8 +153,7 @@ def cycle(seq):
     """Generator version of ``itertools.cycle``.
 
     """
-    iterator = itertools.cycle(seq)
-    return mkgen(iterator.next)
+    Gen(itertools.cycle(seq))
 
 
 def Cycle(seq):
