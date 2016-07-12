@@ -144,12 +144,26 @@ def count(start=0, step=1):
     return mkgen(iterator.next)
 
 
+def Count(start=0, step=1):
+    """Lazy constructor for ``itertools.count``.
+
+    """
+    return lazy(count, start, step)
+
+
 def cycle(seq):
     """Generator version of ``itertools.cycle``.
 
     """
     iterator = itertools.cycle(seq)
     return mkgen(iterator.next)
+
+
+def Cycle(seq):
+    """Lazy constructor for ``itertools.cycle``.
+
+    """
+    return lazy(cycle, seq)
 
 
 def string(format="%i", counter=None):
