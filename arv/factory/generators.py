@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-"""
+"""Value generation for factories.
+
 """
 
 import collections
@@ -8,10 +9,43 @@ import itertools
 
 
 class Gen(object):
-    """Value generator.
+    """Base class for value generators.
 
-    Marker class for iterables that *generate* values for the
-    attributes of the objects created by factories.
+    Consider the following example:
+
+    .. code-block:: python
+
+       >>> factory = Factory(data=[1, 2, 3])
+
+    What does that mean? the list ``[1, 2, 3]`` is a literal value for
+    ``data`` or enumerates the individual values for the attribute on
+    successive calls to the factory? In order to avoid this ambiguity
+    we need some mean to distinguish when an iterable should be used
+    as a literal value for the attribute or as providing individual
+    values.
+
+    ``Gen`` is just a class to mark iterables as value generators. It
+    implements the *iterator* protocol and defines a thin wrapper that
+    delegates the calls to the underlying iterable.
+
+    With that in mind the list in the previous example is interpreted
+    as a literal value. In order to use it as a value generator we
+    must do:
+
+    .. code-block:: python
+
+       >>> from arv.factory.api import Gen
+       >>> factory = Factory(data=Gen([1, 2, 3]))
+
+    .. note:: ``Gen`` instances are themselves iterables, but wrapping
+              a ``Gen`` instance within another ``Gen`` instance does
+              nothing apart from introducing some extra calls due to
+              additional levels of nesting.
+
+              In order to avoid that inefficiency instantiating a
+              ``Gen`` from a ``Gen`` object returns the original
+              ``Gen``. The magic is done in the ``__new__`` and
+              ``__init__`` methods.
 
     """
 
@@ -59,11 +93,12 @@ def mkgen(f, *args, **kwargs):
     """Create a generator from a function.
 
     Returns a value generator (an instance of the ``Gen`` class) wich
-    will call the function with the given arguments each time it's
-    consumed. The return value from the call will be the value
+    will call the function ``f`` with the given arguments each time
+    it's consumed. The return value from the call will be the value
     produced by the generator.
 
     >>> import random
+    >>> from arv.factory.api import mkgen
     >>> g = mkgen(random.randint, 1, 100)
 
     """
@@ -76,15 +111,15 @@ def mkgen(f, *args, **kwargs):
 def mkconstructor(iterable, *args, **kwargs):
     """Create a lazy constructor from an iterable.
 
-    Given an iterable or a callable that accepts no arguments and
-    returns an iterable creates a constructor that will be evaluated
-    at factory construction time.
+    Given an iterable or a callable that returns an iterable, creates
+    a constructor that will be evaluated at factory construction time.
 
     In other words, given an iterable or a callable that returns an
     iterable, return an object than can safely be used in metafactory
     definitions.
 
     >>> import itertools
+    >>> from arv.factory.api import mkconstructor
     >>> Count = mkconstructor(itertools.count)
     >>> Cycle = mkconstructor(itertools.cycle, (1, 2, 3))
 
