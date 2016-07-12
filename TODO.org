@@ -100,3 +100,4 @@ perform some testing, but at least some helper that ensures that the
 generated objects provide all the fields in the schema is required.
 
 ** TODO think about persisting objects
+** TODO support python 3.x
