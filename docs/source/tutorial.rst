@@ -44,6 +44,17 @@ keyword argument:
    >>> alice
    {'name': 'Alice'}
 
+The ``Factory`` class is *schemaless* so it can't check if an
+attribute is allowed or not neither its type. Factories created this
+way will silently accept any keyword argument of any type:
+
+.. doctest::
+
+    >>> factory = Factory()
+    >>> eve = factory(name=42, age="Eve")
+    >>> eve
+    {'age': 'Eve', 'name': 42}
+
 Another way to get objects with different values is using *value
 generators*:
 
@@ -63,18 +74,18 @@ the factory. ``Gen`` creates a *value generator* from any iterable.
 From now on we'll refer to *value generators* simply as *generators*.
 Not to confuse with python generators.
 
-.. note:: generators are allowed only when defining or creating a
-          factory not when creating objects.
+.. warning:: generators are allowed only when defining or creating a
+             factory not when creating objects.
 
-Trying to create new objects once the generator is exhausted will
-raise an ``StopIteration`` exception:
+.. warning:: Trying to create new objects once the generator is
+             exhausted will raise an ``StopIteration`` exception:
 
-.. doctest::
+             .. doctest::
 
-   >>> factory()
-   Traceback (most recent call last):
-   ...
-   StopIteration
+                >>> factory()
+                Traceback (most recent call last):
+                ...
+                StopIteration
 
 Finally, if an attribute of our objects is itself an object we can
 nest factories:
@@ -94,16 +105,17 @@ nest factories:
    >>> factory()
    {'pet': {'kind': 'cat', 'name': 'Rocky'}, 'name': 'Alice'}
 
-The ``Factory`` class is *schemaless* so it can't check if an
-attribute is allowed or not neither its type. Factories created this
-way will silently accept any keyword argument of any type:
+When nesting factories we can override attributes in the subobjects
+using the *double underscore* syntax:
 
 .. doctest::
 
-    >>> factory = Factory()
-    >>> eve = factory(name=42, age="Eve")
-    >>> eve
-    {'age': 'Eve', 'name': 42}
+   >>> pet_factory = Factory(name="Rocky", kind="dog")
+   >>> factory = Factory(name="Bob", pet=pet_factory)
+   >>> factory(pet__name="Toby")
+   {'pet': {'kind': 'dog', 'name': 'Toby'}, 'name': 'Bob'}
+
+The double underscore syntax only works when creating objects.
 
 
 Creating many objects
