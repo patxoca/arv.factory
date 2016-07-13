@@ -292,7 +292,14 @@ attribute is created when the ``PetFactory`` is defined and the same
 value will be shared by all the factories created from ``PetFactory``,
 so ``factory2``, despite using a different ``PetFactory`` from
 ``factory1``, will consume the same generator for the ``kind``
-attribute. This can be illustrated creating a new pet factory:
+attribute.
+
+.. doctest::
+
+   >>> factory1._defaults["pet"]._defaults["kind"] is factory2._defaults["pet"]._defaults["kind"]
+   True
+
+This can be illustrated creating a new pet factory:
 
 .. doctest::
 
