@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import collections
 from unittest import TestCase
 
 import mock
@@ -80,10 +81,10 @@ class TestProcessMetafactoryArguments(TestCase):
         res = self.factory._process_metafactory_arguments(d)
         self.assertTrue(isinstance(res["foo"], Gen))
 
-    def test_evaluates_factories(self):
+    def test_does_not_evaluates_factories(self):
         d = {"foo": Factory()}
         res = self.factory._process_metafactory_arguments(d)
-        self.assertIsInstance(res["foo"], Gen)
+        self.assertIsInstance(res["foo"], Factory)
 
 
 class TestEvalFactoryArguments(TestCase):
@@ -164,13 +165,9 @@ class TestMetafactoryConstructor(TestCase):
         factory = self.MyFactory(foo=DELETE)
         self.assertNotIn("foo", factory._defaults)
 
-    def test_kwargs_honors_factories(self):
-        factory = self.MyFactory(foo=Factory())
-        self.assertIsInstance(factory._defaults["baz"], Gen)
-
-    def test_makes_value_generators_from_metafactories(self):
+    def test_makes_factories_from_metafactories(self):
         factory = self.MyFactory()
-        self.assertIsInstance(factory._defaults["baz"], Gen)
+        self.assertIsInstance(factory._defaults["baz"], Factory)
 
 
 class TestObjectCreation(TestCase):
@@ -263,3 +260,55 @@ class TestSpecifyingAlternateObjectConstructor(TestCase):
     def test_object_attributes(self):
         obj = self.factory(foo=1)
         self.assertEqual(obj.foo, 1)
+
+
+class TestClassifyArguments(TestCase):
+
+    def setUp(self):
+        pass
+
+    def test_no_subattrs(self):
+        input = {"foo": 1, "bar": "baz"}
+        res = Factory._classify_arguments(input)
+        self.assertEqual(res, {"": input})
+
+    def test_subattrs(self):
+        input = {"foo__bar": 1, "foo__foo": "spam", "bar": "baz"}
+        res = Factory._classify_arguments(input)
+        self.assertEqual(
+            res,
+            {"": {"bar": "baz"}, "foo": {"bar": 1, "foo": "spam"}}
+        )
+
+    def test_conflicting_arguments_raises_ValueError(self):
+        # NOTE: use an OrderedDict so that the order of the return
+        # value from 'items()' is predictable and we can
+        input = collections.OrderedDict()
+        input["foo"] = 1
+        input["foo__bar"] = 2
+        with self.assertRaises(ValueError):
+            Factory._classify_arguments(input)
+        input = collections.OrderedDict()
+        input["foo__bar"] = 2
+        input["foo"] = 1
+        with self.assertRaises(ValueError):
+            Factory._classify_arguments(input)
+
+
+class TestDoubleUnderscoreSyntax(TestCase):
+
+    def setUp(self):
+        self.pet_factory = Factory(name="Rocky", kind="dog")
+        self.factory = Factory(name="Bob", pet=self.pet_factory)
+
+    def test_override_attribute_in_subobject(self):
+        self.assertEqual(
+            self.factory(name="Alice", pet__name="Toby"),
+            {"name": "Alice", "pet": {"name": "Toby", "kind": "dog"}}
+        )
+
+    def test_override_whole_subobject(self):
+        self.assertEqual(
+            self.factory(pet=self.pet_factory(name="Baby", kind="snake")),
+            {"name": "Bob", "pet": {"name": "Baby", "kind": "snake"}}
+        )

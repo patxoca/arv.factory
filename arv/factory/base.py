@@ -30,11 +30,13 @@ class Factory(object):
         self._defaults = self._process_metafactory_arguments(d)
 
     def __call__(self, **kwargs):
+        attrs = self._classify_arguments(kwargs)
         res = self._eval_factory_arguments(
             self._defaults,
-            exclude=set(kwargs.keys())
+            attrs,
+            exclude=set(attrs[""].keys())
         )
-        for k, v in kwargs.items():
+        for k, v in attrs[""].items():
             if v is DELETE:
                 if k in res:
                     del res[k]
@@ -67,20 +69,36 @@ class Factory(object):
     def _process_metafactory_arguments(self, d):
         res = {}
         for k, v in d.items():
-            if isinstance(v, Factory):
-                res[k] = mkgen(v)
-            elif v is not DELETE:
+            if v is not DELETE:
                 res[k] = v
         return res
 
-    def _eval_factory_arguments(self, d, exclude=()):
+    def _eval_factory_arguments(self, d, attrs={}, exclude=()):
         res = {}
         for k, v in d.items():
             if k not in exclude:
-                if isinstance(v, Gen):
+                if isinstance(v, Factory):
+                    kwargs = attrs.get(k, {})
+                    res[k] = v(**kwargs)
+                elif isinstance(v, Gen):
                     res[k] = v.next()
                 else:
                     res[k] = v
+        return res
+
+    @staticmethod
+    def _classify_arguments(d):
+        res = {"": {}}
+        for k, v in d.items():
+            if "__" in k:
+                p1, p2 = k.split("__", 1)
+                if p1 in res[""]:
+                    raise ValueError(k)
+            else:
+                p1, p2 = "", k
+                if p2 in res:
+                    raise ValueError(k)
+            res.setdefault(p1, {})[p2] = v
         return res
 
     def _is_contructor(self, v):
