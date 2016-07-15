@@ -3,6 +3,7 @@
 from unittest import TestCase
 
 import mock
+import six
 
 from ..generators import Gen, count, cycle, lazy, mkconstructor, mkgen
 from ..generators import string
@@ -14,14 +15,14 @@ class TestGenerator(TestCase):
         self.generator = Gen([1, 2])
 
     def test_iterates_over_sequence(self):
-        self.assertEqual(self.generator.next(), 1)
-        self.assertEqual(self.generator.next(), 2)
+        self.assertEqual(six.next(self.generator), 1)
+        self.assertEqual(six.next(self.generator), 2)
 
     def test_raises_StopIteration_when_iterable_exhausted(self):
-        self.generator.next()
-        self.generator.next()
+        six.next(self.generator)
+        six.next(self.generator)
         with self.assertRaises(StopIteration):
-            self.generator.next()
+            six.next(self.generator)
 
     def test_wrapping_a_Gen_in_a_Gen_returns_the_original_Gen(self):
         g = Gen(self.generator)
@@ -58,24 +59,24 @@ class TestMkgen(TestCase):
         function = mock.Mock()
         gen = mkgen(function)
         self.assertEqual(function.call_count, 0)
-        gen.next()
+        six.next(gen)
         self.assertEqual(function.call_count, 1)
-        gen.next()
+        six.next(gen)
         self.assertEqual(function.call_count, 2)
 
     def test_call_with_arguments(self):
         function = mock.Mock()
         gen = mkgen(function, 1, foo=1234)
-        gen.next()
+        six.next(gen)
         self.assertEqual(function.call_args, ((1, ), {"foo": 1234}))
-        gen.next()
+        six.next(gen)
         self.assertEqual(function.call_args, ((1, ), {"foo": 1234}))
 
     def test_return_value(self):
         function = mock.Mock(side_effect=[1, 2])
         gen = mkgen(function)
-        self.assertEqual(gen.next(), 1)
-        self.assertEqual(gen.next(), 2)
+        self.assertEqual(six.next(gen), 1)
+        self.assertEqual(six.next(gen), 2)
 
 
 class TestCount(TestCase):
@@ -85,24 +86,24 @@ class TestCount(TestCase):
 
     def test_starts_by_zero_and_steps_by_one(self):
         c = count()
-        self.assertEqual(c.next(), 0)
-        self.assertEqual(c.next(), 1)
-        self.assertEqual(c.next(), 2)
-        self.assertEqual(c.next(), 3)
+        self.assertEqual(six.next(c), 0)
+        self.assertEqual(six.next(c), 1)
+        self.assertEqual(six.next(c), 2)
+        self.assertEqual(six.next(c), 3)
 
     def test_honors_start(self):
         c = count(start=42)
-        self.assertEqual(c.next(), 42)
-        self.assertEqual(c.next(), 43)
-        self.assertEqual(c.next(), 44)
-        self.assertEqual(c.next(), 45)
+        self.assertEqual(six.next(c), 42)
+        self.assertEqual(six.next(c), 43)
+        self.assertEqual(six.next(c), 44)
+        self.assertEqual(six.next(c), 45)
 
     def test_honors_step(self):
         c = count(step=3)
-        self.assertEqual(c.next(), 0)
-        self.assertEqual(c.next(), 3)
-        self.assertEqual(c.next(), 6)
-        self.assertEqual(c.next(), 9)
+        self.assertEqual(six.next(c), 0)
+        self.assertEqual(six.next(c), 3)
+        self.assertEqual(six.next(c), 6)
+        self.assertEqual(six.next(c), 9)
 
 
 class TestCycle(TestCase):
@@ -112,14 +113,14 @@ class TestCycle(TestCase):
 
     def test_walks_over_sequence(self):
         c = cycle((1, 2))
-        self.assertEqual(c.next(), 1)
-        self.assertEqual(c.next(), 2)
+        self.assertEqual(six.next(c), 1)
+        self.assertEqual(six.next(c), 2)
 
     def test_restarts_walk_when_sequence_exhausted(self):
         c = cycle((1, 2))
-        c.next()
-        c.next()
-        self.assertEqual(c.next(), 1)
+        six.next(c)
+        six.next(c)
+        self.assertEqual(six.next(c), 1)
 
 
 class TestString(TestCase):
@@ -129,20 +130,20 @@ class TestString(TestCase):
 
     def test_default_behaviour(self):
         c = string()
-        self.assertEqual(c.next(), "0")
-        self.assertEqual(c.next(), "1")
-        self.assertEqual(c.next(), "2")
+        self.assertEqual(six.next(c), "0")
+        self.assertEqual(six.next(c), "1")
+        self.assertEqual(six.next(c), "2")
 
     def test_honors_format(self):
         c = string(format="%02i")
-        self.assertEqual(c.next(), "00")
-        self.assertEqual(c.next(), "01")
-        self.assertEqual(c.next(), "02")
+        self.assertEqual(six.next(c), "00")
+        self.assertEqual(six.next(c), "01")
+        self.assertEqual(six.next(c), "02")
 
     def test_honors_counter(self):
         c = string(counter=count(42, 3))
-        self.assertEqual(c.next(), "42")
-        self.assertEqual(c.next(), "45")
+        self.assertEqual(six.next(c), "42")
+        self.assertEqual(six.next(c), "45")
 
 
 class TestMkConstructor(TestCase):
@@ -163,24 +164,24 @@ class TestMkConstructor(TestCase):
         c = mkconstructor([1, 2])
         g1 = c()
         g2 = c()
-        self.assertEqual(g1.next(), 1)
-        self.assertEqual(g2.next(), 1)
+        self.assertEqual(six.next(g1), 1)
+        self.assertEqual(six.next(g2), 1)
 
     def test_evaluates_callables(self):
         def generator_function():
             yield 1
         c = mkconstructor(generator_function)
         g = c()
-        self.assertEqual(g.next(), 1)
+        self.assertEqual(six.next(g), 1)
 
     def test_evaluates_callables_on_each_call(self):
         def generator_function():
             yield 1
         c = mkconstructor(generator_function)
         g1 = c()
-        self.assertEqual(g1.next(), 1)
+        self.assertEqual(six.next(g1), 1)
         g2 = c()
-        self.assertEqual(g2.next(), 1)
+        self.assertEqual(six.next(g2), 1)
 
     def test_passes_arguments_to_callable(self):
         def generator_function(a, b):
@@ -189,8 +190,8 @@ class TestMkConstructor(TestCase):
                 a += 1
         c = mkconstructor(generator_function, 3, 5)
         g = c()
-        self.assertEqual(g.next(), 3)
-        self.assertEqual(g.next(), 4)
-        self.assertEqual(g.next(), 5)
+        self.assertEqual(six.next(g), 3)
+        self.assertEqual(six.next(g), 4)
+        self.assertEqual(six.next(g), 5)
         with self.assertRaises(StopIteration):
-            g.next()
+            six.next(g)

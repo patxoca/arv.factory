@@ -2,6 +2,8 @@
 
 # marker utilitzar per les factories per indicar que s'omet un atribut
 
+import six
+
 from .generators import Gen
 from .generators import lazy
 from .generators import mkgen
@@ -81,7 +83,7 @@ class Factory(object):
                     kwargs = attrs.get(k, {})
                     res[k] = v(**kwargs)
                 elif isinstance(v, Gen):
-                    res[k] = v.next()
+                    res[k] = six.next(v)
                 else:
                     res[k] = v
         return res

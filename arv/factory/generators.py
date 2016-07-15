@@ -7,8 +7,10 @@
 import collections
 import itertools
 
+import six
 
-class Gen(object):
+
+class Gen(six.Iterator):
     """Base class for value generators.
 
     Consider the following example:
@@ -53,7 +55,7 @@ class Gen(object):
         if isinstance(iterable, cls):
             return iterable
         else:
-            return super(Gen, cls).__new__(cls, iterable)
+            return super(Gen, cls).__new__(cls)
 
     def __init__(self, iterable):
         if not isinstance(iterable, Gen):
@@ -63,8 +65,8 @@ class Gen(object):
     def __iter__(self):
         return self
 
-    def next(self):
-        return self._seq.next()
+    def __next__(self):
+        return six.next(self._seq)
 
 
 class lazy(object):

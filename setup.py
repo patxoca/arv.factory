@@ -25,6 +25,7 @@ setup(
     install_requires=[
         'setuptools',
         # -*- Extra requirements: -*-
+        "six",
     ],
       entry_points="""
       # -*- Entry points: -*-
