@@ -6,8 +6,9 @@ Introduction
 
 Test fixtures replacement using factories.
 
-This is work in progress and at this point it has only been tested
-with python 2.7.
+This is work in progress.
 
 The documentation is available at
 http://arvfactory.readthedocs.io/en/latest/.
+
+It works with python 2.7, 3.3, 3.4 and 3.5.
