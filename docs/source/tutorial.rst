@@ -466,7 +466,7 @@ Persisting objects
 
 Usually you'll need to save the objects created by the factory to some
 persistent storage in order to perform the testing. ``arv.factory``
-implements functionality for creating persistent factories.
+implements functionality for creating *persistent factories*.
 
 Persistent factories are just factories that define the ``make``
 method. This method just creates and returns an object saved to the
@@ -485,6 +485,9 @@ Django models:
    >>> factory = MyModelFactory()
    >>> obj = factory.make()
 
+.. note:: Creating a persisted object will automatically persist all
+          persistable subobjects, if any.
+
 In order to get a non persisted object just call the factory as usual:
 
 .. code-block:: python
@@ -498,6 +501,10 @@ In order to get a non persisted object just call the factory as usual:
    >>> obj = factory.make(name="Alice")
    >>> obj.name
    'Alice'
+
+Persistent factories also define the ``make_many`` method, equivalent
+to the ``many`` method but persisting the objects.
+
 
 Builtin generators
 ==================
