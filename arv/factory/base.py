@@ -47,11 +47,14 @@ class Factory(object):
         return self.constructor(**res)
 
     def many(self, count, **kwargs):
+        return self._many(count, self.__call__, kwargs)
+
+    def _many(self, count, builder, kwargs):
         res = []
         while count > 0:
             count = count - 1
             d = self._eval_factory_arguments(kwargs)
-            res.append(self(**d))
+            res.append(builder(**d))
         return res
 
     @classmethod
@@ -128,6 +131,9 @@ class PersistanceMixin(object):
         if self._is_persistable(obj):
             return self._persist(obj)
         raise ValueError("Non persistable object.")
+
+    def make_many(self, count, **kwargs):
+        return self._many(count, self.make, kwargs)
 
     def _persist(self, obj):
         for k, v in obj.__dict__.items():
