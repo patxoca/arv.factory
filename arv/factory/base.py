@@ -108,6 +108,51 @@ class Factory(object):
             or isinstance(v, lazy)
 
 
+class PersistanceMixin(object):
+    """Mixin for adding persistance to factories.
+
+    This mixin defines a method ``make`` that creates and returns an
+    object that has been persisted to the backend.
+
+    Classes inheriting from this class must define two methods:
+
+    - ``_save(obj)``: persists the object in the backend.
+
+    - ``_is_persistable(obj)``: returns ``True`` if the object can be
+      persisted.
+
+    """
+
+    def make(self, **kwargs):
+        obj = self(**kwargs)
+        if self._is_persistable(obj):
+            return self._persist(obj)
+        raise ValueError("Non persistable object.")
+
+    def _persist(self, obj):
+        for k, v in obj.__dict__.items():
+            if self._is_persistable(v):
+                self._persist(v)
+        return self._save(obj)
+
+    def _save(self, obj):
+        raise NotImplementedError()
+
+    def _is_persistable(self, obj):
+        raise NotImplementedError()
+
+
+class DjangoFactory(PersistanceMixin, Factory):
+    """Factory for creating django models.
+    """
+
+    def _is_persistable(self, obj):
+        return hasattr(obj, "save") and callable(obj.save)
+
+    def _save(self, obj):
+        return obj.save()
+
+
 def make_factory(**kwargs):
     class F(Factory):
         defaults = kwargs
