@@ -461,6 +461,44 @@ As we'd expect this works with nested factories too:
    'dog'
 
 
+Persisting objects
+==================
+
+Usually you'll need to save the objects created by the factory to some
+persistent storage in order to perform the testing. ``arv.factory``
+implements functionality for creating persistent factories.
+
+Persistent factories are just factories that define the ``make``
+method. This method just creates and returns an object saved to the
+backend.
+
+At this point ``arv.factory`` only defines a factory for persisting
+Django models:
+
+.. code-block:: python
+
+   >>> from arv.factory.api import DjangoFactory
+   >>> class MyModelFactory(DjangoFactory):
+   ...     defaults = {"name": "Bob"}
+   ...     constructor = MyModel
+   ...
+   >>> factory = MyModelFactory()
+   >>> obj = factory.make()
+
+In order to get a non persisted object just call the factory as usual:
+
+.. code-block:: python
+
+   >>> obj = factory()
+
+``make`` accepts keyword arguments as does the factory:
+
+.. code-block:: python
+
+   >>> obj = factory.make(name="Alice")
+   >>> obj.name
+   'Alice'
+
 Builtin generators
 ==================
 
