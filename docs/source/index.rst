@@ -10,6 +10,7 @@ Welcome to arv.factory's documentation!
    :maxdepth: 2
 
    tutorial
+   advanced
    api
 
 
