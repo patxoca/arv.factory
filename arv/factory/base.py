@@ -62,10 +62,6 @@ class Factory(object):
             res.append(builder(**d))
         return res
 
-    @classmethod
-    def _get_defaults(cls):
-        return dict.copy(cls.defaults)
-
     def _process_metafactory_defaults(self, d, exclude=()):
         res = {}
         for k, v in d.items():
