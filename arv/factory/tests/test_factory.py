@@ -326,7 +326,8 @@ class TestPersistanceMixin(TestCase):
             def persist(self):
                 self.persisted = True
 
-        class MyFactory(PersistanceMixin, Factory):
+        class SubFactory(PersistanceMixin, Factory):
+            defaults = {"persistable": False}
             constructor = Object
 
             def _is_persistable(self, obj):
@@ -336,31 +337,31 @@ class TestPersistanceMixin(TestCase):
                 obj.persist()
                 return obj
 
+        class RootFactory(SubFactory):
+            defaults = {
+                "sub1": lazy(SubFactory, persistable=False),
+                "sub2": lazy(SubFactory, persistable=True),
+            }
+
         self.Object = Object
-        self.MyFactory = MyFactory
-        self.factory = MyFactory(foo=42)
+        self.RootFactory = RootFactory
+        self.SubFactory = SubFactory
+        self.factory = RootFactory(foo=42)
 
-    def test_root_object_saved(self):
-        obj = self.Object(False, foo=42)
+    def test_preconditions(self):
+        obj = self.Object(persistable=True, foo=42)
         self.assertFalse(obj.persisted)
         self.factory._persist(obj)
         self.assertTrue(obj.persisted)
-
-    def test_save_called_only_for_persistable_subobjects(self):
-        sobj1 = self.Object(False, foo=42)
-        sobj2 = self.Object(True, foo=42)
-        obj = self.Object(True, foo=42, sobj1=sobj1, sobj2=sobj2)
-        self.assertFalse(obj.persisted)
-        self.assertFalse(sobj1.persisted)
-        self.assertFalse(sobj2.persisted)
-        self.factory._persist(obj)
-        self.assertTrue(obj.persisted)
-        self.assertFalse(sobj1.persisted)
-        self.assertTrue(sobj2.persisted)
 
     def test_make_returns_persisted_object(self):
         obj = self.factory.make()
         self.assertTrue(obj.persisted)
+
+    def test_make_persists_persistable_subobjects(self):
+        obj = self.factory.make()
+        self.assertFalse(obj.sub1.persisted)
+        self.assertTrue(obj.sub2.persisted)
 
     def test_make_overrides_defaults(self):
         obj = self.factory.make(foo=1)

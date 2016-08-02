@@ -10,6 +10,7 @@ from .generators import mkgen
 
 
 DELETE = object()
+_IDENTITY = lambda x: x
 
 
 class Factory(object):
@@ -32,11 +33,18 @@ class Factory(object):
         self._defaults = self._process_metafactory_arguments(d)
 
     def __call__(self, **kwargs):
+        return self._create_object(kwargs, _IDENTITY)
+
+    def many(self, count, **kwargs):
+        return self._many(count, self.__call__, kwargs, _IDENTITY)
+
+    def _create_object(self, kwargs, post):
         attrs = self._classify_arguments(kwargs)
         res = self._eval_factory_arguments(
             self._defaults,
             attrs,
-            exclude=set(attrs[""].keys())
+            exclude=set(attrs[""].keys()),
+            post=post,
         )
         for k, v in attrs[""].items():
             if v is DELETE:
@@ -46,14 +54,11 @@ class Factory(object):
                 res[k] = v
         return self.constructor(**res)
 
-    def many(self, count, **kwargs):
-        return self._many(count, self.__call__, kwargs)
-
-    def _many(self, count, builder, kwargs):
+    def _many(self, count, builder, kwargs, post):
         res = []
         while count > 0:
             count = count - 1
-            d = self._eval_factory_arguments(kwargs)
+            d = self._eval_factory_arguments(kwargs, post)
             res.append(builder(**d))
         return res
 
@@ -78,17 +83,18 @@ class Factory(object):
                 res[k] = v
         return res
 
-    def _eval_factory_arguments(self, d, attrs={}, exclude=()):
+    def _eval_factory_arguments(self, d, attrs={}, exclude=(), post=_IDENTITY):
         res = {}
         for k, v in d.items():
             if k not in exclude:
                 if isinstance(v, Factory):
                     kwargs = attrs.get(k, {})
-                    res[k] = v(**kwargs)
+                    obj = v(**kwargs)
                 elif isinstance(v, Gen):
-                    res[k] = six.next(v)
+                    obj = six.next(v)
                 else:
-                    res[k] = v
+                    obj = v
+                res[k] = post(obj)
         return res
 
     @staticmethod
@@ -127,19 +133,18 @@ class PersistanceMixin(object):
     """
 
     def make(self, **kwargs):
-        obj = self(**kwargs)
-        if self._is_persistable(obj):
-            return self._persist(obj)
-        raise ValueError("Non persistable object.")
+        obj = self._create_object(kwargs, self._persist)
+        if not self._is_persistable(obj):
+            raise ValueError("Non persistable object.")
+        return self._save(obj)
 
     def make_many(self, count, **kwargs):
-        return self._many(count, self.make, kwargs)
+        return self._many(count, self.make, kwargs, self._persist)
 
     def _persist(self, obj):
-        for k, v in obj.__dict__.items():
-            if self._is_persistable(v):
-                self._persist(v)
-        return self._save(obj)
+        if self._is_persistable(obj):
+            return self._save(obj)
+        return obj
 
     def _save(self, obj):
         raise NotImplementedError()
@@ -156,7 +161,8 @@ class DjangoFactory(PersistanceMixin, Factory):
         return hasattr(obj, "save") and callable(obj.save)
 
     def _save(self, obj):
-        return obj.save()
+        obj.save()
+        return obj
 
 
 def make_factory(**kwargs):
