@@ -238,6 +238,11 @@ class TestMany(TestCase):
         obj = self.factory()
         self.assertEqual(obj["bar"], 1)
 
+    def test_calls_factory_in_kwargs(self):
+        res = self.factory.many(2, baz=Factory(spam=Gen([1, 2])))
+        self.assertEqual(res[0]["baz"]["spam"], 1)
+        self.assertEqual(res[1]["baz"]["spam"], 2)
+
 
 class TestSpecifyingAlternateObjectConstructor(TestCase):
 

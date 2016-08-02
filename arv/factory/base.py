@@ -58,7 +58,7 @@ class Factory(object):
         res = []
         while count > 0:
             count = count - 1
-            d = self._eval_factory_arguments(kwargs, post)
+            d = self._eval_factory_arguments(kwargs, post=post)
             res.append(builder(**d))
         return res
 
