@@ -15,6 +15,8 @@ wrap the returned value within a ``Gen`` instance:
 .. doctest::
 
    >>> from itertools import cycle
+   >>> from arv.factory.api import Factory
+   >>> from arv.factory.api import lazy
    >>> class PetFactory(Factory):
    ...     defaults = {
    ...         "name": "Rocky",
@@ -78,6 +80,7 @@ Now we can create a factory:
 
 .. doctest::
 
+   >>> from arv.factory.api import Gen
    >>> g = fib()
    >>> factory = Factory(n=Gen(g))
    >>> factory()
@@ -89,6 +92,7 @@ Alternatively we can use the ``mkgen`` function:
 
 .. doctest::
 
+   >>> from arv.factory.api import gen
    >>> g = fib()
    >>> factory = Factory(n=gen.mkgen(g.next))
    >>> factory()
@@ -161,39 +165,49 @@ constructor:
 Defining a persistent factory
 =============================
 
-In case that ``arv.factory`` does not provide a persitent factory for
-your backend defining a new one is easy as cake.
+In case that there's not a persitent factory for your backend defining
+a new one is easy as cake.
 
 A persistent factory must inherit from :class:`PersitanceMixin` and
-some factory class and must implement the methods ``_is_persistable``
-and ``_save``.
+some factory class and must implement the methods:
 
-- ``_is_persistable`` receives a value and returns ``True`` if it's
-  persistable by the backend. Usually it's enough testing is the
-  object is an instance of some class, ``django.db.models.Model`` by
-  the way, or if it has some *distinguished* attribute or method.
+- ``_get_fields(obj)``: receives an object and must return a list of
+  pairs ``(field_name, field_value)``.
 
-- ``_save`` receives an object and is responsible for persisting the
-  object to the backend. It's guaranteed that it will be called only
-  for objects that pass the ``_is_persistable`` check.
+- ``_is_persistable(obj)``: receives a field's value and returns
+  ``True`` if it's persistable by the backend. Usually it's enough
+  testing is the object is an instance of some class,
+  ``django.db.models.Model`` by the way, or if it has some
+  *distinguished* attribute or method.
+
+- ``_link_to_parent(parent, name, child)``: defines the relationship
+  between an object and a subobject. ``parent`` is the parent object,
+  ``name`` is the field name and ``child`` is the subobject stored in
+  that field.
+
+- ``_save(obj)``: receives an object and is responsible for persisting
+  the object to the backend. It's guaranteed that it will be called
+  only for objects that pass the ``_is_persistable`` check. It must
+  return the persisted object.
 
 As an example here's the implementations for ``DjangoFactory``:
 
 .. code-block:: python
 
-
    class DjangoFactory(PersistanceMixin, Factory):
        """Factory for creating django models.
        """
 
+       def _get_fields(self, obj):
+           for f in obj._meta.get_fields():
+               yield f.name, getattr(obj, f.name)
+
        def _is_persistable(self, obj):
-           return hasattr(obj, "save") and callable(obj.save)
+           return isinstance(obj, Model)
+
+       def _link_to_parent(self, parent, name, child):
+           setattr(parent, name + "_id", child.pk)
 
        def _save(self, obj):
-           return obj.save()
-
-The only thing worth noting is that ``_is_persistable`` checks for the
-presence of ``save`` method in the object instead of checking if it's
-an instance of ``django.db.models.Model``. It's done that way in order
-to avoid a dependency from django, so that people using the library
-for other backends don't get django installed.
+           obj.save()
+           return obj

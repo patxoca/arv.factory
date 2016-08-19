@@ -466,18 +466,20 @@ Persisting objects
 
 Usually you'll need to save the objects created by the factory to some
 persistent storage in order to perform the testing. ``arv.factory``
-implements functionality for creating *persistent factories*.
+implements functionality to ease defining *persistent metafactories*.
 
 Persistent factories are just factories that define the ``make``
-method. This method just creates and returns an object saved to the
-backend.
+method. This method just creates and returns an object that has been
+saved to the storage backend.
 
-At this point ``arv.factory`` only defines a factory for persisting
+In order to avoid dependency problems ``arv.factory`` does no provide
+any persistent factory by itself. The companion package
+``arv.factory_django`` defines a base metafactory for persisting
 Django models:
 
 .. code-block:: python
 
-   >>> from arv.factory.api import DjangoFactory
+   >>> from arv.factory_django.api import DjangoFactory
    >>> class MyModelFactory(DjangoFactory):
    ...     defaults = {"name": "Bob"}
    ...     constructor = MyModel
