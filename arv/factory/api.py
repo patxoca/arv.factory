@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from . import generators as gen  # noqa: F401
-from .base import DjangoFactory  # noqa: F401
 from .base import DELETE        # noqa: F401
 from .base import Factory       # noqa: F401
 from .generators import Gen     # noqa: F401
