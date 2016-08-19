@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-import os
 
 version = '0.0.1'
 
@@ -13,7 +12,7 @@ setup(
     classifiers=[
         "Programming Language :: Python",
     ],
-      keywords='',
+    keywords='',
     author='Alexis Roda',
     author_email='alexis.roda.villalonga@gmail.com',
     url='https://github.com/patxoca/arv.factory',
@@ -27,7 +26,7 @@ setup(
         # -*- Extra requirements: -*-
         "six",
     ],
-      entry_points="""
-      # -*- Entry points: -*-
-      """,
+    entry_points="""
+    # -*- Entry points: -*-
+    """,
 )
