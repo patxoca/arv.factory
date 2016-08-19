@@ -6,7 +6,6 @@ import six
 
 from .generators import Gen
 from .generators import lazy
-from .generators import mkgen
 
 
 DELETE = object()
