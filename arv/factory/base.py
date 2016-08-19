@@ -153,9 +153,3 @@ class DjangoFactory(PersistanceMixin, Factory):
 
     def _save(self, obj):
         return obj.save()
-
-
-def make_factory(**kwargs):
-    class F(Factory):
-        defaults = kwargs
-    return F
