@@ -8,6 +8,16 @@
 
 * TODOs
 
+** TODO [#A] cleanup the API
+
+** TODO allow computed attributes
+
+It may be useful to be able to calculate an attibute's value based on
+other attribute's value.
+
+This requires defining some ordering when calculating the attribute's
+values.
+
 ** DONE ~ObjectFactory~ is redundant
    - State "DONE"       from "TODO"       [2016-07-07 dj 21:09]
 
