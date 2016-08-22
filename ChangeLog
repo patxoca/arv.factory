@@ -1,0 +1,358 @@
+2016-08-22  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* TODO.org: Update TODO list.
+
+2016-08-22  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/api.py, arv/factory/generators.py,
+	docs/source/advanced.rst, docs/source/tutorial.rst: Clean 'api.py'.  Some elements imported by the 'api' module are already accesible
+	through the 'gen' alias. Making them accessible as 'api.xxx' and
+	'api.gen.xxx' it's a bit redundant.
+
+2016-08-20  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* setup.py: release 0.1.0
+
+2016-08-20  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/advanced.rst, docs/source/tutorial.rst: Update
+	documentation.
+
+2016-08-19  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py: Remove unused import.
+
+2016-08-19  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* .projectile: Delete '.projectile'.  Having two packages the project root has been moved one level up.
+
+2016-08-19  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/api.py, arv/factory/base.py,
+	arv/factory/persistance.py, arv/factory/tests/test_factory.py,
+	arv/factory/tests/test_persistance.py: Refactor persistance.  - moved 'PersistanceMixin' to a separate module.  - moved 'PersistanceMixin' related tests to a separate test module.  - remove 'DjangoFactory'. To avoid dependency problems for projects
+	  that only require 'arv.factory' is has been moved to a separate
+	package.
+
+2016-08-19  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/api.py: Remove funtion from API.  Removed from 'base.py' in commit e502175 but not from 'api.py'.
+
+2016-08-19  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* setup.py: Remove unused import os. Fix a couple indentation
+	issues.
+
+2016-08-19  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py: Remove unused function 'make_factory'.
+
+2016-08-07  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/tests/test_factory.py: Revert
+	changesets f8b13f5 528dd84 The desing of the new persistance machinery has some drawback. I
+	need to think a bit more about how to implement it properly.  This reverts commit f8b13f57f7a61896fc4c592912d8ff22f6c57056.  Conflicts: 	arv/factory/base.py
+
+2016-08-02  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py: Removed unused method '_get_defaults'.
+
+2016-08-02  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/tests/test_factory.py: Fixed bug
+	in '_many'.  Add a test to avoid regression.
+
+2016-08-02  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/tests/test_factory.py: Simplify
+	the code related to persistance.  Moved the code that creates the object to it's own method. This
+	method takes a parameter that will be called for each attribute of
+	the object being created.  Adjust some method signatures so that this extra parameter is passed
+	around.  Adjust tests.
+
+2016-07-19  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/advanced.rst, docs/source/index.rst,
+	docs/source/tutorial.rst: Add a section to the docs on defining a
+	persistent factory.
+
+2016-07-19  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/tutorial.rst: Update tutorial.
+
+2016-07-19  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py: Define the 'make_many' method.
+
+2016-07-19  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/tutorial.rst: Add a section on persising objects.
+
+2016-07-19  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/api.py: Add 'DjangoFactory' to the public API.
+
+2016-07-19  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/tests/test_factory.py: Define
+	class 'PersistanceMixin'.
+
+2016-07-15  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* README.rst: Update README.
+
+2016-07-15  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* .travis.yml: Add python 3.x targets to 'config.yml'.
+
+2016-07-15  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* tox.ini: Add 'tox.ini'.
+
+2016-07-15  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/generators.py,
+	arv/factory/tests/test_generators.py, setup.py: Add support for
+	python 3.x.
+
+2016-07-13  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/tutorial.rst: Add example to verify shared generator.
+
+2016-07-13  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/tutorial.rst: Add example for the double underscore
+	syntax.  Other minor changes of style and structure.
+
+2016-07-13  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/tests/test_factory.py: Add
+	support for the double underscore syntax.
+
+2016-07-12  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/generators.py: Fix bug in 'cycle'.
+
+2016-07-12  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* TODO.org: Update TODO.
+
+2016-07-12  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/generators.py: Cleanup value generators
+	implementation.
+
+2016-07-12  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/api.py: Update publica API.
+
+2016-07-12  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/generators.py: Add lazy constructors for 'count' and
+	'cycle'.
+
+2016-07-12  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* TODO.org: Update TODO.
+
+2016-07-12  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/tutorial.rst: Update tutorial.
+
+2016-07-12  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/api.rst, docs/source/index.rst: Add API documentation.
+
+2016-07-12  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/generators.py: Update docstrings.
+
+2016-07-12  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/generators.py, arv/factory/tests/test_generators.py: 
+	Avoid wrapping a 'Gen' within a 'Gen'.
+
+2016-07-11  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/generators.py, arv/factory/tests/test_generators.py: 
+	Add arguments to 'mkconstructor'.
+
+2016-07-11  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/generators.py: Add docstrings.
+
+2016-07-10  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* .projectile: Add '.projectile' configuration.
+
+2016-07-10  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* TODO.org: Update TODO.
+
+2016-07-10  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/tests/test_factory.py: Fix failing test.
+
+2016-07-10  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/tutorial.rst: Update tutorial.
+
+2016-07-10  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/tests/test_factory.py: Refactor
+	'Factory' and adjust/add tests.
+
+2016-07-10  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/generators.py, arv/factory/tests/test_generators.py: 
+	Change default format string for 'string'. Adjusts tests.
+
+2016-07-10  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/generators.py, arv/factory/tests/test_generators.py: 
+	Define 'mkconstructor'.
+
+2016-07-10  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/generators.py, arv/factory/tests/test_generators.py: 
+	Add 'lazy' class.
+
+2016-07-08  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/tests/test_factory.py: Update tests.
+
+2016-07-08  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py: Remove magic from function and generators.  Treating generators and functions as special values is minimalistic
+	but makes the usage of the library a bit complex.
+
+2016-07-08  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/generators.py, arv/factory/tests/test_generators.py: 
+	Introduce value generators.
+
+2016-07-07  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/tutorial.rst: Update tutorial.
+
+2016-07-07  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* TODO.org: Add TODO.
+
+2016-07-07  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/tutorial.rst: Add section 'creating other types of
+	objects'.
+
+2016-07-07  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/tutorial.rst: Complete the 'creating may objects'
+	section.
+
+2016-07-07  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/tutorial.rst: Add example to the tutorial.
+
+2016-07-07  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/tests/test_factory.py: Remove
+	'ObjectFactory' class.
+
+2016-07-07  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/tests/test_factory.py: Fix bug in
+	'many' when specifying a negative count.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/tests/test_factory.py: Define
+	'ObjectFactory'.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/tutorial.rst: Minor changes to the tutorial.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* .travis.yml: Another tweak to travis setup.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* README.rst: Update README.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* .travis.yml, requirements_tests.txt: Tweak travis CI
+	configuration.  py.test complains about 'import file mismatch'. I hope that
+	requiring a newer version for py.test fixes the issue.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* .travis.yml: Add '.travis.yml'.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/conf.py: Disable 'sphinx.ext.githubpages' extension.  Building the docs in readthedocs complains about that extension is
+	missing.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* docs/source/index.rst, docs/source/tutorial.rst: Add a tutorial.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/api.py: Add 'DELETE' and 'escape' to the api.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py: Fix error in 'make_factory'.  Using the same name for the arguments and the class attributes
+	raises an error.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* setup.py: Fix error in 'setup.py'.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py: Change 'make_factory' signature.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/api.py: Add 'api' module.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/tests/test_factory.py: Implement
+	'many' method.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/tests/test_factory.py: Change
+	defaults protocol.  Any attribute whose default value is a callable will be called, not
+	just generator functions, and its return value will be used as the
+	actual default value for the attribute.  Added the function 'escape' in case the default value is a function.  Addes a couple of tests.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/tests/test_factory.py: Remove
+	'$Id:$' marker.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/tests/__init__.py,
+	arv/factory/tests/test_factory.py: Define base 'Factory' class.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* .gitignore: Add '*~' to '.gitignore'.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* README.rst, arv/__init__.py, arv/factory/__init__.py,
+	docs/Makefile, docs/source/conf.py, docs/source/index.rst, setup.py: 
+	Create package skeleton.
+
+2016-07-06  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* Initial commit
+
