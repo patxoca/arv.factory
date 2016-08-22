@@ -36,8 +36,8 @@ class Gen(six.Iterator):
 
     .. code-block:: python
 
-       >>> from arv.factory.api import Gen
-       >>> factory = Factory(data=Gen([1, 2, 3]))
+       >>> from arv.factory.api import gen
+       >>> factory = Factory(data=gen.Gen([1, 2, 3]))
 
     .. note:: ``Gen`` instances are themselves iterables, but wrapping
               a ``Gen`` instance within another ``Gen`` instance does
@@ -100,8 +100,8 @@ def mkgen(f, *args, **kwargs):
     produced by the generator.
 
     >>> import random
-    >>> from arv.factory.api import mkgen
-    >>> g = mkgen(random.randint, 1, 100)
+    >>> from arv.factory.api import gen
+    >>> g = gen.mkgen(random.randint, 1, 100)
 
     """
     def wrapper():
@@ -121,9 +121,9 @@ def mkconstructor(iterable, *args, **kwargs):
     definitions.
 
     >>> import itertools
-    >>> from arv.factory.api import mkconstructor
-    >>> Count = mkconstructor(itertools.count)
-    >>> Cycle = mkconstructor(itertools.cycle, (1, 2, 3))
+    >>> from arv.factory.api import gen
+    >>> Count = gen.mkconstructor(itertools.count)
+    >>> Cycle = gen.mkconstructor(itertools.cycle, (1, 2, 3))
 
     """
     def constructor():

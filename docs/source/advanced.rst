@@ -16,11 +16,11 @@ wrap the returned value within a ``Gen`` instance:
 
    >>> from itertools import cycle
    >>> from arv.factory.api import Factory
-   >>> from arv.factory.api import lazy
+   >>> from arv.factory.api import gen
    >>> class PetFactory(Factory):
    ...     defaults = {
    ...         "name": "Rocky",
-   ...         "kind": lazy(cycle, ["dog", "cat"]),
+   ...         "kind": gen.lazy(cycle, ["dog", "cat"]),
    ...     }
    ...
    >>> factory = PetFactory()
@@ -41,7 +41,7 @@ allow us to override the default values:
    >>> class PersonFactory(Factory):
    ...     defaults = {
    ...         "name": "Bob",
-   ...         "pet": lazy(PetFactory, name="Toby"),
+   ...         "pet": gen.lazy(PetFactory, name="Toby"),
    ...     }
    ...
    >>> factory1 = PersonFactory()
@@ -80,9 +80,9 @@ Now we can create a factory:
 
 .. doctest::
 
-   >>> from arv.factory.api import Gen
+   >>> from arv.factory.api import gen
    >>> g = fib()
-   >>> factory = Factory(n=Gen(g))
+   >>> factory = Factory(n=gen.Gen(g))
    >>> factory()
    {'n': 0}
    >>> factory()
@@ -118,7 +118,7 @@ time it's consumed.
 .. doctest::
 
    >>> class MyFactory(Factory):
-   ...     defaults = {"n": lazy(Fib)}
+   ...     defaults = {"n": gen.lazy(Fib)}
    ...
    >>> factory = MyFactory()
    >>> factory()
@@ -132,7 +132,7 @@ If we want to avoid having to use lazy explicitly we can do:
 
 .. doctest::
 
-   >>> FIB = lazy(Fib)
+   >>> FIB = gen.lazy(Fib)
    >>> class MyFactory(Factory):
    ...     defaults = {"n": FIB}
    ...

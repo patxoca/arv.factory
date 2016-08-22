@@ -60,8 +60,8 @@ generators*:
 
 .. doctest::
 
-   >>> from arv.factory.api import Gen
-   >>> factory = Factory(name=Gen(["Bob", "Alice", "Eve"]))
+   >>> from arv.factory.api import gen
+   >>> factory = Factory(name=gen.Gen(["Bob", "Alice", "Eve"]))
    >>> factory()
    {'name': 'Bob'}
    >>> factory()
@@ -94,10 +94,10 @@ nest factories:
 
    >>> pet_factory = Factory(
    ...     name="Rocky",
-   ...     kind=Gen(["dog", "cat", "snake"])
+   ...     kind=gen.Gen(["dog", "cat", "snake"])
    ... )
    >>> factory = Factory(
-   ...     name=Gen(["Bob", "Alice"]),
+   ...     name=gen.Gen(["Bob", "Alice"]),
    ...     pet=pet_factory
    ... )
    >>> factory()
@@ -128,7 +128,7 @@ as required with just one call:
 .. doctest::
 
    >>> factory = Factory(
-   ...     name=Gen(["Bob", "Alice"]),
+   ...     name=gen.Gen(["Bob", "Alice"]),
    ...     age=42,
    ... )
    >>> factory.many(2)
@@ -139,10 +139,10 @@ as required with just one call:
 .. doctest::
 
    >>> factory = Factory(
-   ...     name=Gen(["Bob", "Alice"]),
+   ...     name=gen.Gen(["Bob", "Alice"]),
    ...     age=42,
    ... )
-   >>> factory.many(2, age=Gen([42, 39]))
+   >>> factory.many(2, age=gen.Gen([42, 39]))
    [{'age': 42, 'name': 'Bob'}, {'age': 39, 'name': 'Alice'}]
 
 
@@ -208,7 +208,7 @@ metafactory as the default value for any attribute.
 
    .. doctest::
 
-      >>> pet_factory = Factory(name="Rocky", kind=Gen(["dog", "cat"]))
+      >>> pet_factory = Factory(name="Rocky", kind=gen.Gen(["dog", "cat"]))
       >>> class MyFactory(Factory):
       ...     defaults = {
       ...         "name": "Bob",
@@ -233,7 +233,7 @@ metafactory as the default value for any attribute.
       >>> class PetFactory(Factory):
       ...     defaults = {
       ...         "name": "Rocky",
-      ...         "kind": Gen(["dog", "cat"]),
+      ...         "kind": gen.Gen(["dog", "cat"]),
       ...     }
       ...
       >>> class MyFactory(Factory):
@@ -260,7 +260,7 @@ Consider the following example:
    >>> class PetFactory(Factory):
    ...     defaults = {
    ...         "name": "Rocky",
-   ...         "kind": Gen(["dog", "cat"]),
+   ...         "kind": gen.Gen(["dog", "cat"]),
    ...     }
    ...
    >>> class PersonFactory(Factory):
@@ -318,11 +318,10 @@ can be done using the ``lazy`` class:
 
 .. doctest::
 
-   >>> from arv.factory.api import lazy
    >>> class PetFactory(Factory):
    ...     defaults = {
    ...         "name": "Rocky",
-   ...         "kind": lazy(Gen, ["dog", "cat"]),
+   ...         "kind": gen.lazy(gen.Gen, ["dog", "cat"]),
    ...     }
    ...
    >>> class PersonFactory(Factory):
@@ -344,7 +343,7 @@ raise a ``TypeError`` exception:
 
 .. doctest::
 
-   >>> lazy(Gen([1, 2,3]))
+   >>> gen.lazy(gen.Gen([1, 2,3]))
    Traceback (most recent call last):
    ...
    TypeError
@@ -354,7 +353,7 @@ for an attribute:
 
 .. doctest::
 
-   >>> pet_factory = Factory(name="Rocky", kind=Gen(["dog", "cat"]))
+   >>> pet_factory = Factory(name="Rocky", kind=gen.Gen(["dog", "cat"]))
    >>> class MyFactory(Factory):
    ...     defaults = {
    ...         "name": "Bob",
@@ -384,7 +383,7 @@ created and will not be shared by any other factory. In fact using
 
    >>> pet_factory = Factory(
    ...     name="Rocky",
-   ...     kind=lazy(Gen, ["dog", "cat"])
+   ...     kind=gen.lazy(gen.Gen, ["dog", "cat"])
    ... )
    >>> pet_factory() #doctest: +ELLIPSIS
    {'kind': <arv.factory.generators.lazy object at 0x...>, 'name': 'Rocky'}
@@ -532,7 +531,6 @@ the generator is consumed:
 
 .. doctest::
 
-   >>> from arv.factory.api import gen
    >>> def myfunction(a, b):
    ...     return "a=%s b=%s" % (a, b)
    ...
