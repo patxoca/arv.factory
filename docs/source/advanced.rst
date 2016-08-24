@@ -211,3 +211,53 @@ As an example here's the implementations for ``DjangoFactory``:
        def _save(self, obj):
            obj.save()
            return obj
+
+
+Using ``faker``
+===============
+
+We can use the ``faker`` library with ``arv.factory``. Since the
+``faker`` providers are callables all we need to do is wrapping them
+with ``mkgen``:
+
+.. code-block:: python
+
+   from faker import Factory as FakerFactory
+   from arv.factory.api import Factory
+   from arv.factory.api import gen
+
+   class PersonFactory(Factory):
+       faker = FakerFactory.create()
+       defaults = {
+           "name": gen.mkgen(faker.first_name),
+           "birth_date": gen.mkgen(faker.date),
+       }
+
+This will work but there's a lot of boilerplate. We can do better
+defining our own fakers factory that eases integration with
+``arv.factory`` factories:
+
+.. code-block:: python
+
+   # helper_module.py
+   from faker import Factory as _FakerFactory
+   from arv.factory.api import gen
+
+   class FakerFactory(object):
+       def __init__(self, *args, **kwargs):
+           self._faker = _FakerFactory.create(*args, **kwargs)
+       def __getattr__(self, name):
+           method = gen.mkgen(getattr(self._faker, name))
+           setattr(self, name, method)
+           return method
+
+   # factories.py
+   from arv.factory.api import Factory
+   from helper_module import FakerFactory
+
+   class PersonFactory(Factory):
+       faker = FakerFactory()
+       defaults = {
+           "name": faker.first_name,
+           "birth_date": faker.date,
+       }
