@@ -205,5 +205,5 @@ class TestChoice(TestCase):
     def test_returns_elements_from_the_sequence(self):
         choices = list(range(10))  # py 3
         c = choice(choices)
-        for i in xrange(10 * len(choices)):
+        for i in range(10 * len(choices)):
             self.assertIn(c.next(), choices)
