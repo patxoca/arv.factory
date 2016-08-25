@@ -5,7 +5,7 @@ from unittest import TestCase
 import mock
 import six
 
-from ..generators import Gen, count, cycle, lazy, mkconstructor, mkgen
+from ..generators import Gen, choice, count, cycle, lazy, mkconstructor, mkgen
 from ..generators import string
 
 
@@ -195,3 +195,15 @@ class TestMkConstructor(TestCase):
         self.assertEqual(six.next(g), 5)
         with self.assertRaises(StopIteration):
             six.next(g)
+
+
+class TestChoice(TestCase):
+
+    def test_type(self):
+        self.assertIsInstance(choice((1, 2)), Gen)
+
+    def test_returns_elements_from_the_sequence(self):
+        choices = list(range(10))  # py 3
+        c = choice(choices)
+        for i in xrange(10 * len(choices)):
+            self.assertIn(c.next(), choices)

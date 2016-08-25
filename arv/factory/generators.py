@@ -6,6 +6,7 @@
 
 import collections
 import itertools
+import random
 
 import six
 
@@ -163,6 +164,16 @@ def Cycle(seq):
 
     """
     return lazy(cycle, seq)
+
+
+def choice(seq):
+    """Generator version fo ``random.choice``.
+
+    Since this generator never will get exhausted and generates random
+    values a lazy constructor is not required.
+
+    """
+    return mkgen(random.choice, seq)
 
 
 def string(format="%i", counter=None):
