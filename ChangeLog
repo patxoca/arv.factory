@@ -1,5 +1,14 @@
 2016-08-25  Alexis Roda <alexis.roda.villalonga@gmail.com>
 
+	* arv/factory/tests/test_generators.py: Fix py3 compatibility in
+	test.
+
+2016-08-25  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* ChangeLog, setup.py: Release 0.2.1
+
+2016-08-25  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
 	* arv/factory/tests/test_generators.py: Fix bug in test.  Python 3 does not define 'xrange'. Use 'range' instead.
 
 2016-08-25  Alexis Roda <alexis.roda.villalonga@gmail.com>
