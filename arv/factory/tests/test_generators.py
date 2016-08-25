@@ -206,4 +206,4 @@ class TestChoice(TestCase):
         choices = list(range(10))  # py 3
         c = choice(choices)
         for i in range(10 * len(choices)):
-            self.assertIn(c.next(), choices)
+            self.assertIn(six.next(c), choices)
