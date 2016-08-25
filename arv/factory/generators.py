@@ -176,6 +176,13 @@ def choice(seq):
     return mkgen(random.choice, seq)
 
 
+def randint(min, max):
+    """Generator version for ``random.randint``.
+
+    """
+    return mkgen(random.randint, min, max)
+
+
 def string(format="%i", counter=None):
     if counter is None:
         counter = itertools.count()
