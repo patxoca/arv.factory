@@ -1,5 +1,9 @@
 2016-08-25  Alexis Roda <alexis.roda.villalonga@gmail.com>
 
+	* ChangeLog, setup.py: Release 0.2.3
+
+2016-08-25  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
 	* arv/factory/generators.py: Add 'gen.randint' helper.
 
 2016-08-25  Alexis Roda <alexis.roda.villalonga@gmail.com>
