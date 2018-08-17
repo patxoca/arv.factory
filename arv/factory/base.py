@@ -2,7 +2,9 @@
 
 # marker utilitzar per les factories per indicar que s'omet un atribut
 
-import six
+from __future__ import unicode_literals
+from builtins import next
+from builtins import object
 
 from .generators import Gen
 from .generators import lazy
@@ -81,7 +83,7 @@ class Factory(object):
                     kwargs = attrs.get(k, {})
                     res[k] = v(**kwargs)
                 elif isinstance(v, Gen):
-                    res[k] = six.next(v)
+                    res[k] = next(v)
                 else:
                     res[k] = v
         return res

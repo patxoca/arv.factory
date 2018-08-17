@@ -2,6 +2,9 @@
 
 # $Id:$
 
+from __future__ import unicode_literals
+from builtins import object
+
 from unittest import TestCase
 
 from ..base import Factory
@@ -27,7 +30,7 @@ class TestPersistanceMixin(TestCase):
                 d = dict(obj.__dict__)
                 del d["persistable"]
                 del d["persisted"]
-                return d.items()
+                return list(d.items())
 
             def _is_persistable(self, obj):
                 return getattr(obj, "persistable", False)
