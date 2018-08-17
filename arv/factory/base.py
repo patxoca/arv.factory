@@ -41,9 +41,6 @@ class Factory(object):
         )
         for k, v in attrs[""].items():
             if v is not DELETE:
-                # if k in res:
-                # del res[k]
-            # else:
                 res[k] = v
         return self.constructor(**res)
 
