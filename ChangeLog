@@ -1,5 +1,9 @@
 2018-08-17  Alexis Roda <alexis.roda.villalonga@gmail.com>
 
+	* ChangeLog, setup.py: Release 0.2.5
+
+2018-08-17  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
 	* : commit 96434a2a51c14478d062ec753d732c6611df9574 Author: Alexis
 	Roda <alexis.roda.villalonga@gmail.com> Date:   Fri Aug 17 13:56:21
 	2018 +0200
