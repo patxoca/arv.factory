@@ -1,5 +1,22 @@
 2018-08-17  Alexis Roda <alexis.roda.villalonga@gmail.com>
 
+	* arv/factory/base.py: Remove commented code.
+
+2018-08-17  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/base.py, arv/factory/tests/test_generators.py,
+	arv/factory/tests/test_persistance.py: Increase code coverage.  * Add tests in order to increase code coverage.  * Clean `TestCount` test case.  * Remove dead code in `arv.factory.base`.    The original code was:   ```python     for k, v in attrs[""].items():         if v is DELETE:             if k in res:                 del res[k]         else:             res[k] = v   ```   But the `del` line was never executed (thanks `coverage`!). It
+	  turns out that the keys from `attrs[""]` are excluded from `res`
+	  by `_eval_factory_arguments()`, so `k in res` will allways evaluate
+	  to `False` since `k` is a key from `attrs[""]`. The previous code
+	  can be rewritten as:   ```python     for k, v in attrs[""].items():         if v is not DELETE:             res[k] = v   ```
+
+2018-08-17  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* ChangeLog, setup.py: Release 0.2.7
+
+2018-08-17  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
 	* ChangeLog, setup.py: Release 0.2.6
 
 2018-08-17  Alexis Roda <alexis.roda.villalonga@gmail.com>
