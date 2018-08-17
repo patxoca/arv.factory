@@ -40,10 +40,10 @@ class Factory(object):
             exclude=set(attrs[""].keys())
         )
         for k, v in attrs[""].items():
-            if v is DELETE:
-                if k in res:
-                    del res[k]
-            else:
+            if v is not DELETE:
+                # if k in res:
+                # del res[k]
+            # else:
                 res[k] = v
         return self.constructor(**res)
 

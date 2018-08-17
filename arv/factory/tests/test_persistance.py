@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 from builtins import object
 
 from unittest import TestCase
+import mock
 
 from ..base import Factory
 from ..persistance import PersistanceMixin
@@ -62,3 +63,18 @@ class TestPersistanceMixin(TestCase):
     def test_make_overrides_defaults(self):
         obj = self.factory.make(foo=1)
         self.assertEqual(obj.foo, 1)
+
+    def test_make_raises_ValueError_if_not_persistable(self):
+        with self.assertRaisesRegexp(ValueError, "Non persistable object."):
+            self.factory.make(persistable=False)
+
+    def test_make_many(self):
+        with mock.patch.object(self.factory, "_many") as method:
+            self.factory.make_many(5, foo=1, bar="Hello")
+            self.assertEqual(method.call_count, 1)
+            args, kwargs = method.call_args
+            self.assertEqual(
+                args,
+                (5, self.factory.make, {"foo": 1, "bar": "Hello"})
+            )
+            self.assertEqual(kwargs, {})
