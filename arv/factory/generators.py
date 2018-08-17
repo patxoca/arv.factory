@@ -3,15 +3,16 @@
 """Value generation for factories.
 
 """
+from __future__ import unicode_literals
+from builtins import next
+from builtins import object
 
 import collections
 import itertools
 import random
 
-import six
 
-
-class Gen(six.Iterator):
+class Gen(object):
     """Base class for value generators.
 
     Consider the following example:
@@ -67,7 +68,7 @@ class Gen(six.Iterator):
         return self
 
     def __next__(self):
-        return six.next(self._seq)
+        return next(self._seq)
 
 
 class lazy(object):

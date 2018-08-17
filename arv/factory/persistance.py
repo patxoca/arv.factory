@@ -2,6 +2,9 @@
 
 # $Id:$
 
+from __future__ import unicode_literals
+from builtins import object
+
 
 class PersistanceMixin(object):
     """Mixin for adding persistance to factories.
