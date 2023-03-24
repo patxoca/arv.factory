@@ -7,7 +7,11 @@ from __future__ import unicode_literals
 from builtins import next
 from builtins import object
 
-import collections
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
+
 import itertools
 import random
 
@@ -88,7 +92,7 @@ class lazy(object):
 
     def __call__(self):
         res = self._f(*self._args, **self._kwargs)
-        if isinstance(res, collections.Iterable):
+        if isinstance(res, Iterable):
             res = Gen(res)
         return res
 
@@ -133,7 +137,7 @@ def mkconstructor(iterable, *args, **kwargs):
             i = iterable(*args, **kwargs)
         else:
             i = iterable
-        if not isinstance(i, collections.Iterable):
+        if not isinstance(i, Iterable):
             raise TypeError("not an iterable.")
         return Gen(i)
     return lazy(constructor)
