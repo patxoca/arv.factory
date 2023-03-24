@@ -1,3 +1,23 @@
+2023-03-24  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* : commit bf23a31ee26305957e3b8048cb806ee201769eaf Author: Alexis
+	Roda <alexis.roda.villalonga@gmail.com> Date:   Fri Mar 24 17:29:55
+	2023 +0100
+
+2020-03-19  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* .travis.yml: Update ".travis.yml".  Drop support for python 3.3 and add support for python 3.6, 3.7 and
+	3.8.
+
+2020-03-18  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* setup.py, tox.ini: Afegir suport per python 3.7 i 3.8.  S'afegeixen targets en "tox.ini" i classifiers explícits en
+	"setup.py".
+
+2018-08-17  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* ChangeLog, setup.py: Release 0.2.8
+
 2018-08-17  Alexis Roda <alexis.roda.villalonga@gmail.com>
 
 	* arv/factory/base.py: Remove commented code.
