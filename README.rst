@@ -1,9 +1,6 @@
 Introduction
 ============
 
-.. image:: https://travis-ci.org/patxoca/arv.factory.svg?branch=master
-   :target: https://travis-ci.org/patxoca/arv.factory
-
 Test fixtures replacement using factories.
 
 This is work in progress.
