@@ -6,7 +6,10 @@ from builtins import range
 
 from unittest import TestCase
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from ..generators import Gen
 from ..generators import choice

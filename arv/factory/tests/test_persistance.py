@@ -6,7 +6,10 @@ from __future__ import unicode_literals
 from builtins import object
 
 from unittest import TestCase
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from ..base import Factory
 from ..persistance import PersistanceMixin

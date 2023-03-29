@@ -6,7 +6,10 @@ from builtins import object
 import collections
 from unittest import TestCase
 
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from ..base import DELETE, Factory
 from ..generators import Gen, lazy
