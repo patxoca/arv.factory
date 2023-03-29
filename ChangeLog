@@ -1,3 +1,39 @@
+2023-03-29  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* arv/factory/tests/test_factory.py,
+	arv/factory/tests/test_generators.py,
+	arv/factory/tests/test_persistance.py, tox.ini: Prefer builtin mock
+	to the external library.
+
+2023-03-29  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* README.rst, setup.py, tox.ini: Drop python 3.4 support.  Running tox against python 3.4 produces the following traceback::   Error processing line 1 of
+
+	/tmp/tox/py34/lib/python3.4/site-packages/distutils-precedence.pth:    Traceback (most recent call last):       File "/opt/bin/../python/3.4.10/lib/python3.4/site.py", line
+	        167, in addpackage exec(line)       File "<string>", line 1, in <module>       File
+
+
+
+	"/tmp/tox/py34/lib/python3.4/site-packages/_distutils_hack/__init__.py", line 194f'spec_for_{name}',                          ^     SyntaxError: invalid syntax   Remainder of file ignored This happens with tox 4.4.8, with tox 2.9.1 al testenvs run ok.
+	Anyway, I'm not using python 3.4 myself and I don't have time to
+	investigate the issue, so it's ok to drop support for this version.
+
+2023-03-24  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* .travis.yml, README.rst: Remove travis-CI configuration.
+
+2023-03-24  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* README.rst: Update README.
+
+2023-03-24  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* .travis.yml: Update travis config.
+
+2023-03-24  Alexis Roda <alexis.roda.villalonga@gmail.com>
+
+	* ChangeLog, setup.py: Release 0.2.9
+
 2023-03-24  Alexis Roda <alexis.roda.villalonga@gmail.com>
 
 	* : commit bf23a31ee26305957e3b8048cb806ee201769eaf Author: Alexis

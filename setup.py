@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from setuptools import setup, find_packages
 
-version = "0.2.9"
+version = "0.2.10"
 
 setup(
     name='arv.factory',
